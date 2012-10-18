@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="examples"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="src" path="resource"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk14-140.jar"/>
+	<classpathentry kind="lib" path="lib/jaxen-1.1.4.jar"/>
+	<classpathentry kind="lib" path="lib/jdom-2.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
+	<classpathentry kind="lib" path="lib/Opc.Ua.Stack-1.01.308.2.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
