@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+
+<project default="clean-build" basedir=".">
+    
+    <property name="project.name" value="OpenOpcUaServer" />
+	<property name="version" value="0.8" />
+	<property name="build" value="1" />
+	<property name="src.dir" value="src" />
+	<property name="lib.dir" value="lib" />
+	<property name="res.dir" value="resource" />
+	<property name="build.dir" value="build" />
+	<property name="classes.dir" value="tmp" />
+	
+	<target name="clean">
+		<delete dir="${build.dir}" quiet="true" />
+	</target>
+	
+	<path id="project.classpath" >
+         <fileset dir="${lib.dir}">
+             <include name="**/*.jar"/>
+         </fileset>
+     </path>
+	
+	<target name="compile" depends="clean">
+		<mkdir dir="${classes.dir}" />
+		<javac 
+			srcdir="${src.dir}" 
+			destdir="${classes.dir}" 
+			classpathref="project.classpath">		
+		</javac>
+	</target>
+	
+	<target name="build" depends="compile">
+		<mkdir dir="${build.dir}" />
+	
+		<jar destfile="${build.dir}/${project.name}-${version}.${build}.jar" basedir="${classes.dir}">
+		    <!-- include resources -->
+			<fileset dir="${res.dir}" includes="**/*" />
+		    <manifest>
+		      <!-- Who is building this jar? -->
+		      <attribute name="Built-By" value="${user.name}"/>
+		      <attribute name="Implementation-Vendor" value="Harald Hofstätter"/>
+		      <attribute name="Implementation-Title" value="Open OPC UA Server"/>
+		      <attribute name="Implementation-Version" value="${version}.${build}"/>
+		    </manifest>			
+		</jar>
+		
+		<zip destfile="${build.dir}/${project.name}-${version}.${build}-src.zip" basedir="${src.dir}">
+		    <fileset dir="${res.dir}" includes="**/*" />
+		</zip>	
+		
+		<!-- includes dependency libs -->
+		<zip destfile="${build.dir}/${project.name} ${version} Redistributables [${build}].zip">
+			<fileset dir="${build.dir}" includes="${project.name}-${version}.${build}.jar" />
+			<fileset dir="${lib.dir}" includes="**/*" />
+		</zip>
+		
+		<delete dir="${classes.dir.dir}" quiet="true" />
+	</target>
+
+	<target name="clean-build" depends="clean,build" />
+</project>

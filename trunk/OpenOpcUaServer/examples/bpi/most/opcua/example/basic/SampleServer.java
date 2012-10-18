@@ -1,0 +1,128 @@
+package bpi.most.opcua.example.basic;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.cert.CertificateException;
+
+import org.opcfoundation.ua.common.ServiceResultException;
+import org.opcfoundation.ua.core.ApplicationDescription;
+import org.opcfoundation.ua.transport.Endpoint;
+import org.opcfoundation.ua.transport.security.KeyPair;
+import org.opcfoundation.ua.transport.security.SecurityMode;
+import org.opcfoundation.ua.utils.CertificateUtils;
+
+import bpi.most.opcua.example.basic.nodes.Floor;
+import bpi.most.opcua.example.basic.nodes.Room;
+import bpi.most.opcua.server.annotation.AnnotationNodeManager;
+import bpi.most.opcua.server.core.UAServer;
+
+public class SampleServer {
+
+	private static final String SERVER_ENDPOINT = "opc.tcp://127.0.0.1:6001/sampleuaserver";
+	
+	/**
+	 * @param args
+	 * @throws URISyntaxException
+	 * @throws IOException
+	 * @throws ServiceResultException
+	 * @throws CertificateException
+	 */
+	public static void main(String[] args) throws URISyntaxException,
+			CertificateException, ServiceResultException, IOException {
+
+		//create a UAServer instance
+		UAServer s = new UAServer();
+		
+		//set the allowed authentication policies. here we support username+password and anonymous sessions
+		s.addAnonymousTokenPolicy();
+		s.addUserTokenPolicy();
+
+		//Set some applicationdescriptions
+		ApplicationDescription appDesc = new ApplicationDescription();
+		s.setServerDesc(appDesc);
+
+		//choose address server is bound to
+//		String hostname = InetAddress.getLocalHost().getHostName();
+		
+		Endpoint endpoint = new Endpoint(new URI(SERVER_ENDPOINT), SecurityMode.NONE);
+		s.setEndpoint(endpoint);
+
+		//set a X.509 certificate for the server - this is mandatory
+		s.addApplicationInstanceCertificate(getApplicationInstanceCertificate());
+
+		//set nodemanger
+		AnnotationNodeManager annoNMgr = new AnnotationNodeManager(new SampleNodeManager(), "my building", "contains some sample nodes of a building", "sampleBuilding");
+		//add nodes to get introspected at startup -> this is a good practice
+		annoNMgr.addObjectToIntrospect(new Floor());
+		annoNMgr.addObjectToIntrospect(new Room());
+		s.addNodeManager(annoNMgr);
+		
+		//start the server so that it is ready to serve requests.
+		s.start();
+
+		try {
+			// let the server run until key was entered in console
+			System.out.println("stop server with any key");
+			System.in.read();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		System.out.println("closing server...");
+
+		//stop the server.
+		s.stop();
+
+		System.out.println("server closed");
+	}
+
+	/**
+	 * creates a an X509 certificate
+	 * @return
+	 * @throws ServiceResultException
+	 * @throws IOException
+	 * @throws CertificateException
+	 */
+	private static KeyPair getApplicationInstanceCertificate()
+			throws ServiceResultException, IOException, CertificateException {
+/*		
+		KeyPair kp = null;
+		
+		File certFile = FileUtils.getFileFromResource("/pki/server.pem");
+		File keyFile = FileUtils.getFileFromResource("/pki/server.key");
+		final String passPhrase = "";
+
+
+		Cert cert = Cert.load(certFile);
+//		PrivKey key = PrivKey.load(keyFile, passPhrase);
+		
+		
+		final PEMReader pemReader = new PEMReader(new FileReader(keyFile), new PasswordFinder() {
+	        @Override
+	        public char[] getPassword() {
+	            return passPhrase.toCharArray();
+	        }
+	    });
+
+		java.security.KeyPair javaSecKp = (java.security.KeyPair) pemReader.readObject();
+		
+		PrivKey key = null;
+		try {
+			key = new PrivKey(javaSecKp.getPrivate().getEncoded());
+		}catch (InvalidKeySpecException e) {
+			e.printStackTrace();
+		}
+		kp = new KeyPair(cert, key);
+*/		
+		
+		KeyPair kp = null;
+		try {
+			//create one on the fly
+			kp = CertificateUtils.createApplicationInstanceCertificate("sampleserver", "tu vienna", SERVER_ENDPOINT, 365);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return kp;
+	}
+}
