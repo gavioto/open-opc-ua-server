@@ -25,3 +25,5 @@ This implementation has dependencies to some Java libraries which are listed her
  * jaxen-1.1.4.jar - http://jaxen.codehaus.org/
  * log4j-1.2.16.jar - http://logging.apache.org/log4j/1.2/
  * bcprov-jdk-14-140.jar - http://www.bouncycastle.org
+ 
+you have to add them into the /lib directory to use the existing ant build script. i am checking rights if i am allowed to include them here.
