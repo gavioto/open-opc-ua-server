@@ -5,8 +5,14 @@
 Mapping domain specific data to OPC UA nodes is repetitive and failure prone. For example to create the correct OPC UA nodes out of a complex Java bean you have to deal with OPC UA references to design the bean-in-bean relationships.
 
 == Example ==
-{{{
-public class SimpleBean{
+Consider we want to create OPC UA nodes of the following bean:
 
+{{{
+public class Student{
+  private String name;
+  private Date birthday;
+  private University uni;
+
+  ...
 }
 }}}
