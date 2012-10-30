@@ -51,6 +51,8 @@ Custom ID generators could be supported sometime in the future.
 
 == Parent-Child relationships ==
 
+Also known as one-to-many relationships are not describable by annotations at the moment, issue 4 will tackle this problem.
+
 == Properties == 
 
 == Variables ==
