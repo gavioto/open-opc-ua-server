@@ -32,7 +32,7 @@ public class TestClient {
 			
 			System.out.println(resp);
 			
-			GetEndpointsRequest epReq = new GetEndpointsRequest(null, "opc.tcp://hareNote:6001/testua", null, null);
+			GetEndpointsRequest epReq = new GetEndpointsRequest(null, "opc.tcp://localhost:6001/testua", null, null);
 			GetEndpointsResponse epResp = (GetEndpointsResponse) channel.serviceRequest(epReq);
 			
 			System.out.println(epResp.getEndpoints()[0]);
