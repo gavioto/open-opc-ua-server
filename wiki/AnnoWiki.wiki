@@ -6,9 +6,11 @@ Annotations are probably the easiest way to publish data into the OPC UA address
  * Annotate the beans as desired
  * Use an instance of `AnnotationNodeManager` with an custom implementation of the IAnnotationSource interface 
 
+All snippets here are taken from classes in the package `bpi.most.opcua.example.basic`
+
 = Annotations =
 
-== Mandatory Annotations ==
+== Node Attributes ==
 
 Classes which are should be mapped to OPC UA Nodes have to be annotated with `@UaNode`
 {{{
@@ -51,11 +53,49 @@ Custom ID generators could be supported sometime in the future.
 
 == Parent-Child relationships ==
 
-Also known as one-to-many relationships are not describable by annotations at the moment, issue 4 will tackle this problem.
+Also known as one-to-many relationships are not describable by annotations at the moment, issue 4 will tackle this problem. For know this kind of relationship is realized by implementing the `IAnnotationNodeSource#getChildren(String parentClassName, String parentId)` method. This method should return all children for a parent node of the given `parentClassName` and `parentId`. The class name again is without packages, hence an example call for this method could be with the arguments `("Floor", "3")`.
+
+The implementor of this method has to distinguish classes and return the children for the correct id. For example returning all `Room`s for a given `Floor`
+{{{
+...
+private final String FLOOR_NODE = Floor.class.getSimpleName();
+...
+
+@Override
+public List<?> getChildren(String parentClassName, String parentId) {
+   List<?> result = null;
+   if (FLOOR_NODE.equals(parentClassName)){
+      result = allFloors.get(Integer.parseInt(parentId)).getRooms();
+   }
+   return result;
+}
+}}}
 
 == Properties == 
 
+Properties represent the characteristics of a Node. Properties do not change their value in contrast to Variables. To create a Property, annotate the desired field with an `@Property` annotation. Only primitive Types and Strings are supported. Let's have a look at the Room class 
+{{{
+@UaNode(nodeClass = NodeClass.Object)
+public class Room {
+...
+
+/**
+ * area of the room in square meter
+ */
+@Property
+private Double area;
+	
+/**
+ * amount of windows
+ */
+@Property
+private Integer windowCount;
+
+...
+}}}
+
 == Variables ==
+Variables are used to represent the actual data of an Object. For now only simple Variables are supported, no complex ones.
 
 = Wiring everything up =
 
@@ -78,3 +118,6 @@ s.addNodeManager(annoNMgr);
 
 ...
 }}}
+
+== Limitations ==
+It is not possible to design other Attributs of Nodes like `WriteMask` or `UserWriteMask`
