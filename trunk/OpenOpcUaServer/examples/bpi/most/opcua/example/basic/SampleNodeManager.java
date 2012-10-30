@@ -63,6 +63,10 @@ public class SampleNodeManager implements IAnnotatedNodeSource{
 		allRooms.put(r12.getNumber(), r12);
 	}
 	
+	/**
+	 * distinguishes which class is wanted and afterwards does a simple value by key
+	 * lookup in the correct map (allFloors vs allRooms)
+	 */
 	@Override
 	public Object getObjectById(String className, String id) {
 		Object result = null;
@@ -76,18 +80,28 @@ public class SampleNodeManager implements IAnnotatedNodeSource{
 		return result;
 	}
 
+	/**
+	 * the top level elements are floors, therefore we return all {@link Floor}s
+	 */
 	@Override
 	public List<?> getTopLevelElements() {
 		return new ArrayList<Object>(allFloors.values());
 	}
 
+	/**
+	 * only floors do have children, namely rooms. hence we return for a floor -- identified
+	 * by the given parentId -- all rooms in it.
+	 * <br/>
+	 * <br/>
+	 * if we would also have buildings, then of course we would have to distinguish to 
+	 * return floors for a particular buildings, or rooms for a floor.
+	 */
 	@Override
-	public List<?> getChildren(String className, String parentId) {
+	public List<?> getChildren(String parentClassName, String parentId) {
 		List<?> result = null;
-		if (FLOOR_NODE.equals(className)){
+		if (FLOOR_NODE.equals(parentClassName)){
 			result = allFloors.get(Integer.parseInt(parentId)).getRooms();
 		}
 		return result;
 	}
-
 }

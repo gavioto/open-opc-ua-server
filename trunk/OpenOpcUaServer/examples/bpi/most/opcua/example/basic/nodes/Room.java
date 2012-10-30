@@ -1,7 +1,5 @@
 package bpi.most.opcua.example.basic.nodes;
 
-import org.opcfoundation.ua.core.NodeClass;
-
 import bpi.most.opcua.server.ReferenceType;
 import bpi.most.opcua.server.annotation.AnnotationNodeManager;
 import bpi.most.opcua.server.annotation.Description;
@@ -11,7 +9,7 @@ import bpi.most.opcua.server.annotation.Property;
 import bpi.most.opcua.server.annotation.Reference;
 import bpi.most.opcua.server.annotation.UaNode;
 
-@UaNode(nodeClass = NodeClass.Object)
+@UaNode
 public class Room {
 
 	@ID
@@ -30,10 +28,10 @@ public class Room {
 	@Property
 	private Double area;
 	
-	@Property
 	/**
 	 * amount of windows
 	 */
+	@Property
 	private Integer windowCount;
 	
 	@Reference(refType = ReferenceType.hasComponent)

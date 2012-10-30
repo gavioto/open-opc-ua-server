@@ -10,7 +10,5 @@ import org.opcfoundation.ua.core.NodeClass;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface UaNode{
-
-	NodeClass nodeClass();
-	
+	NodeClass nodeClass() default NodeClass.Object;
 }

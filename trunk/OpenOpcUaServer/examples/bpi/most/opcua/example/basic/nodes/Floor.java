@@ -2,23 +2,30 @@ package bpi.most.opcua.example.basic.nodes;
 
 import java.util.List;
 
-import org.opcfoundation.ua.core.NodeClass;
-
 import bpi.most.opcua.server.annotation.AnnotationNodeManager;
 import bpi.most.opcua.server.annotation.Description;
 import bpi.most.opcua.server.annotation.DisplayName;
 import bpi.most.opcua.server.annotation.ID;
 import bpi.most.opcua.server.annotation.UaNode;
 
-@UaNode(nodeClass=NodeClass.Object)
+@UaNode
 public class Floor {
 
+	/**
+	 * level of the floor
+	 */
 	@ID
 	private int level;
 	
+	/**
+	 * name of the floor
+	 */
 	@DisplayName
 	private String name;
 	
+	/**
+	 * description to the floor
+	 */
 	@Description
 	private String description;
 	
