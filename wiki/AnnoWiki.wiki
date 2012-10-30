@@ -6,6 +6,50 @@ Annotations are probably the easiest way to publish data into the OPC UA address
  * Annotate the beans as desired
  * Use an instance of `AnnotationNodeManager` with an custom implementation of the IAnnotationSource interface 
 
+= Annotations =
+
+== Mandatory Annotations ==
+
+Classes which are should be mapped to OPC UA Nodes have to be annotated with `@UaNode`
+{{{
+@UaNode
+public class Floor {
+...
+}}}
+The `@UaNode` annotations has a property nodeClass whose default value is  `NodeClass.Object`. Hence omitting this property leads the bean to be an OPC UA Object Node. The only values which are supported for nodeClass are
+ * `NodeClass.Object` and
+ * `NodeClass.Variable`
+
+Every node has to be uniquely identified in the address space and needs a name which is displayed to the client. Therefore the `@ID` and `@DisplayName` annotations are used:
+{{{
+...
+
+ /**
+  * level of the floor
+  */
+ @ID
+ private int level;
+
+ /**
+  * name of the floor
+  */
+ @DisplayName
+ private String name;
+
+...
+}}}
+
+With the annotations so far, every instance of `Floor` will be represented in the address space as a own node with the display name set to the `name` field and the `level` field will be part of the created ID for the node. 
+
+== ID Generation ==
+
+
+== Parent-Child relationships ==
+
+== Properties == 
+
+== Variables ==
+
 = Wiring everything up =
 
 {{{
