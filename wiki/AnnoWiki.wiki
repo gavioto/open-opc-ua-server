@@ -1,13 +1,29 @@
 #summary Documentation of all annotations and how to use them
 
-= Introduction =
+= Overview =
 
-Add your content here.
+Annotations are probably the easiest way to publish data into the OPC UA address space. To use annotations 2 things have to be done:
+ * Annotate the beans as desired
+ * Use an instance of `AnnotationNodeManager` with an custom implementation of the IAnnotationSource interface 
 
+= Wiring everything up =
 
-= Details =
+{{{
+UAServer s = new UAServer();
+...
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+AnnotationNodeManager annoNMgr = 
+   new AnnotationNodeManager(
+      new SampleNodeManager(),
+      "my building",
+      "contains some sample nodes of a building",
+      "sampleBuilding"
+   );
+
+//add nodes to get introspected at startup -> this is a good practice
+annoNMgr.addObjectToIntrospect(new Floor());
+annoNMgr.addObjectToIntrospect(new Room());
+s.addNodeManager(annoNMgr);
+
+...
+}}}
