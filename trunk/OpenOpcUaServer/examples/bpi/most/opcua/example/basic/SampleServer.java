@@ -15,8 +15,21 @@ import org.opcfoundation.ua.utils.CertificateUtils;
 import bpi.most.opcua.example.basic.nodes.Floor;
 import bpi.most.opcua.example.basic.nodes.Room;
 import bpi.most.opcua.server.annotation.AnnotationNodeManager;
+import bpi.most.opcua.server.annotation.IAnnotatedNodeSource;
 import bpi.most.opcua.server.core.UAServer;
+import bpi.most.opcua.server.core.adressspace.INodeManager;
 
+/**
+ * A simple OPC UA Server. It binds itself to an TCP port and uses annotations
+ * to map Java Beans to OPC UA Nodes. All annotated beans are located in the subpackage "nodes".
+ * All OPC UA communications is abstracted by the {@link UAServer}. The {@link UAServer} uses 
+ * several {@link INodeManager}s to build the address space and to access the actual data represented
+ * by OPC UA nodes. Accessing data for annotated beans, an {@link IAnnotatedNodeSource} has to
+ * be implemented which is done in the class {@link SampleNodeManager}.
+ * 
+ * @author harald
+ *
+ */
 public class SampleServer {
 
 	private static final String SERVER_ENDPOINT = "opc.tcp://127.0.0.1:6001/sampleuaserver";
