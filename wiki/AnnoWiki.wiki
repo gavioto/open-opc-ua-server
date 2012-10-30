@@ -116,6 +116,8 @@ private String unit = "value between 0 and 1";
 ...
 }}}
 
+Annotating a single field with @Variable as you would annotate a Property with @Property is not supported. See issue 6 for this feature.
+
 = Wiring everything up =
 
 {{{
