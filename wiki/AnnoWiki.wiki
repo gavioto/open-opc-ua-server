@@ -133,6 +133,10 @@ Annotating a single field with @Variable as you would annotate a Property with @
 
 = Wiring everything up =
 
+So that all annotated beans are really used an implementation of `IAnnotationNodeSource` has to be given to a new `AnnotationNodeManager`. The latter has to be added to the created `UAServer` Object.
+
+It is useful to introspect annotated classes before the server is started, so that the mapping is available when clients want to read values. This is done with the `AnnotationNodeManager#addObjectToIntrospect(Object obj)` method. This also prevents the server throwing an exception if the custom `IAnnotationNodeSource` returns null on an unknown Type. 
+
 {{{
 UAServer s = new UAServer();
 ...
