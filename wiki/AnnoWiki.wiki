@@ -112,6 +112,8 @@ private String displName = "Relative Humidity";
 
 @Property
 private String unit = "value between 0 and 1";
+
+...
 }}}
 
 = Wiring everything up =
