@@ -95,7 +95,23 @@ private Integer windowCount;
 }}}
 
 == Variables ==
-Variables are used to represent the actual data of an Object. For now only simple Variables are supported, no complex ones.
+Variables are used to represent the actual data of an Object. For now only simple Variable Values are supported, no complex ones. Have a look at the following example 
+{{{
+@UaNode(nodeClass = NodeClass.Variable)
+public class HumiditySensor{
+
+/**
+ * current value of the sensor
+ */
+@Value
+private Double value;
+	
+@DisplayName
+private String displName = "Relative Humidity";
+
+@Property
+private String unit = "value between 0 and 1";
+}}}
 
 = Wiring everything up =
 
