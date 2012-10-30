@@ -95,7 +95,8 @@ private Integer windowCount;
 }}}
 
 == Variables ==
-Variables are used to represent the actual data of an Object. For now only simple Variable Values are supported, no complex ones. Have a look at the following example 
+Variables are used to represent the actual data of an Object. For now only simple Variable Values are supported, no complex ones. Variables are annotated with `@UaNode(nodeClass = NodeClass.Variable)` and need to have a field annotated with `@Value` which represents the current value of the variable.
+
 {{{
 @UaNode(nodeClass = NodeClass.Variable)
 public class HumiditySensor{
