@@ -43,6 +43,11 @@ With the annotations so far, every instance of `Floor` will be represented in th
 
 == ID Generation ==
 
+Nodes in the address space have to be uniquely identifiable, therefore some ID generation strategy has to be used. The current implementation concatenates the class name (without package information) with the value of the field which is annotated with @ID. So for example an instance of `Floor` with the field `level` set to 3 would be mapped to an OPC UA Node with an ID of `Floor:3`. But this is an implementation detail which should not bother you. Because only the class' name is used, no two classes with the same name (but different packages) are supported.
+
+For the @ID field, every type which can be represented as `String` can be used.
+
+Custom ID generators could be supported sometime in the future.
 
 == Parent-Child relationships ==
 
