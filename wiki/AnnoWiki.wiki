@@ -75,45 +75,58 @@ public List<?> getChildren(String parentClassName, String parentId) {
 
 Properties represent the characteristics of a Node. Properties do not change their value in contrast to Variables. To create a Property, annotate the desired field with an `@Property` annotation. Only primitive Types and Strings are supported. Let's have a look at the Room class 
 {{{
-@UaNode(nodeClass = NodeClass.Object)
+@UaNode
 public class Room {
 ...
 
-/**
- * area of the room in square meter
- */
-@Property
-private Double area;
+   /**
+    * area of the room in square meter
+    */
+   @Property
+   private Double area;
 	
-/**
- * amount of windows
- */
-@Property
-private Integer windowCount;
+   /**
+    * amount of windows
+    */
+   @Property
+   private Integer windowCount;
 
 ...
 }}}
 
 == Variables ==
-Variables are used to represent the actual data of an Object. For now only simple Variable Values are supported, no complex ones. Variables are annotated with `@UaNode(nodeClass = NodeClass.Variable)` and need to have a field annotated with `@Value` which represents the current value of the variable.
+Variables are used to represent the actual data of an Object. For now only simple Variable Values are supported, no complex ones. Variables are annotated with `@UaNode(nodeClass = NodeClass.Variable)` and need to have a field annotated with `@Value` which represents the current value of the variable. So that a Variable appears in the address space it somehow has to be referenced. This is done with the `@Reference` annotation. For the following example consider that a `Room` has a `HumiditySensor`
 
 {{{
 @UaNode(nodeClass = NodeClass.Variable)
 public class HumiditySensor{
 
-/**
- * current value of the sensor
- */
-@Value
-private Double value;
+   /**
+    * current value of the sensor
+    */
+   @Value
+   private Double value;
 	
-@DisplayName
-private String displName = "Relative Humidity";
+   @DisplayName
+   private String displName = "Relative Humidity";
 
-@Property
-private String unit = "value between 0 and 1";
+   @Property
+   private String unit = "value between 0 and 1";
 
 ...
+}
+
+@UaNode
+public class Room {
+...
+
+   @Reference(refType = ReferenceType.hasComponent)
+   private HumiditySensor humSens;
+
+...
+}
+
+
 }}}
 
 Annotating a single field with @Variable as you would annotate a Property with @Property is not supported. See issue 6 for this feature.
