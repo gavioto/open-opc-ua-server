@@ -50,4 +50,4 @@ public class Student{
 }
 }}} 
 
-Consider that annotating fields with @Variable is not supported now, follow issue 6 to see when it is available. Variables are supported but only as own Java Beans. Have a look at AnnoWiki for that
+Consider that annotating fields with @Variable is not supported now, follow issue 6 to see when it is available. Variables are supported but only as own Java Beans. Have a look at AnnoWiki#Variables for that
