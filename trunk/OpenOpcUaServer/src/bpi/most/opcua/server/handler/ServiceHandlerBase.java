@@ -23,6 +23,8 @@ public class ServiceHandlerBase{
 	
 	protected void validateHeader(RequestHeader reqHeader){
 		//TODO do header validation here
+		
+		//TODO validate authtoken if it matches the session
 	}
 	
 	protected ResponseHeader buildRespHeader(ServiceRequest req) {

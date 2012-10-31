@@ -12,7 +12,6 @@ import org.opcfoundation.ua.core.AddNodesResponse;
 import org.opcfoundation.ua.core.AddReferencesRequest;
 import org.opcfoundation.ua.core.AddReferencesResponse;
 import org.opcfoundation.ua.core.BrowseDescription;
-import org.opcfoundation.ua.core.BrowseDirection;
 import org.opcfoundation.ua.core.BrowseNextRequest;
 import org.opcfoundation.ua.core.BrowseNextResponse;
 import org.opcfoundation.ua.core.BrowseRequest;
@@ -39,6 +38,10 @@ import org.opcfoundation.ua.core.UnregisterNodesResponse;
 import org.opcfoundation.ua.transport.EndpointServiceRequest;
 
 import bpi.most.opcua.server.core.util.Stopwatch;
+import bpi.most.opcua.server.handler.referencefilter.IReferenceFilter;
+import bpi.most.opcua.server.handler.referencefilter.RefDirectionFilter;
+import bpi.most.opcua.server.handler.referencefilter.RefTypeFilter;
+import bpi.most.opcua.server.handler.referencefilter.TargetNodeTypeFilter;
 
 public class BrowseServiceHandler extends ServiceHandlerBase implements NodeManagementServiceSetHandler{
 
@@ -97,6 +100,7 @@ public class BrowseServiceHandler extends ServiceHandlerBase implements NodeMana
 	//	LOG.info("viewdescription: " + req.getView());
 		
 		//max references per node to return; 0 -> no limitation.
+		//TODO consider this value. therefore continuation points have to be supported!! therefore we have to store the point in our sessioin --> session mgmt has to work better
 		int maxReferences = req.getRequestedMaxReferencesPerNode().intValue();
 		
 		LOG.info("clients sends browserequest for " + req.getNodesToBrowse().length + " nodes");
@@ -115,51 +119,91 @@ public class BrowseServiceHandler extends ServiceHandlerBase implements NodeMana
 		lastResponse = System.currentTimeMillis();
 	}
 	
+	/**
+	 * This method does browsing for one single node
+	 * @param browseDesc
+	 * @return
+	 */
 	private BrowseResult browse(BrowseDescription browseDesc){
-		BrowseResult result = new BrowseResult();
-		result.setStatusCode(StatusCode.GOOD);
-		
-		EnumSet<NodeClass> classMask = browseDesc.getNodeClassMask().intValue() == 0 ? NodeClass.ALL : NodeClass.getSet(browseDesc.getNodeClassMask());
-		LOG.debug("classmask for browserequest: " + classMask.toString());
-		
-		//TODO consider NodeClass mask
-		EnumSet<BrowseResultMask> resMask = BrowseResultMask.getSet(browseDesc.getResultMask());
-		LOG.debug("resultmask for browserequest: " + resMask.toString());
-		//TODO consider BrowseResultMask
-		
+		//fetch all references.
 		List<ReferenceDescription> allReferences = server.getAddrSpace().browseNode(browseDesc.getNodeId());
 		
-		//TODO create some filtermechanism which we can also use for classMask and resultMask
-		List<ReferenceDescription> filteredReferences = new ArrayList<ReferenceDescription>();
-		
-		/**
-		 * apply filtering of references, based on the request
+		/*
+		 * there are several filters which are be applied on the fetched references because the client may want to restrict them:
+		 * 
+		 * 1.) filter them by reference direction
+		 * 2.) filter them by the targets Node's NodeClass
+		 * 3.) filter them by reference type
+		 * 
+		 * we do the filtering here because its a central point and so not every nodemanager has to deal with the filtering
 		 */
-		for (ReferenceDescription refDesc: allReferences){
-			
-			/*
-			 * here we filter out the hastypedefinition reference (does not have to exist one), because its not relevant for the children.
-			 * and the hastypedefinition is not built by an seperate reference, but is set in the ReferenceDescription#TypeDefinition property.
-			 * 
-			 */
-//			if (!Identifiers.HasTypeDefinition.equals(refDesc.getReferenceTypeId())){
-				
-				if (!browseDesc.getBrowseDirection().equals(BrowseDirection.Both)){
-					//consider borwsedirection
-					boolean isForward = BrowseDirection.Forward.equals(browseDesc.getBrowseDirection());
-						if (refDesc.getIsForward() == isForward){
-							filteredReferences.add(refDesc);
-						}
-				}else{
-					filteredReferences.add(refDesc);
-				}
-//			}
+		List<IReferenceFilter> filters = new ArrayList<IReferenceFilter>();
+		filters.add(new RefDirectionFilter());
+		filters.add(new TargetNodeTypeFilter());
+		filters.add(new RefTypeFilter());
+		
+		//apply every filter
+		List<ReferenceDescription> filteredReferences = allReferences;
+		for (IReferenceFilter filter: filters){
+			filteredReferences = filter.filter(filteredReferences, browseDesc);
 		}
 		
-		result.setReferences(filteredReferences.toArray(new ReferenceDescription[filteredReferences.size()]));
+		//filter fields of the remaining referenceDescriptions to match the clients request. he may want just a view fields set
+		EnumSet<BrowseResultMask> resMask = BrowseResultMask.getSet(browseDesc.getResultMask());
+//		LOG.debug("resultmask for browserequest: " + resMask.toString());
+		List<ReferenceDescription> resultingDescriptions = new ArrayList<ReferenceDescription>();
+		for (ReferenceDescription refDesc: filteredReferences){
+			resultingDescriptions.add(filterRefDescFields(refDesc, resMask));
+		}
+		
+		//create the result
+		BrowseResult result = new BrowseResult();
+		result.setStatusCode(StatusCode.GOOD);
+		result.setReferences(filteredReferences.toArray(new ReferenceDescription[resultingDescriptions.size()]));
 		return result;
 	}
-
+	
+	/**
+	 * the client can decide which fields he want to be set in the resulting {@link ReferenceDescription}. This is
+	 * done by a {@link BrowseResultMask}. This method sets only those fields, the client requested with its sent
+	 * {@link BrowseResultMask}.
+	 * @param refDescToFilter
+	 * @return
+	 */
+	private ReferenceDescription filterRefDescFields(ReferenceDescription refDescToFilter, EnumSet<BrowseResultMask> mask){
+		ReferenceDescription result;
+		
+		if (mask.contains(BrowseResultMask.All)){
+			//return all fields
+			result = refDescToFilter;
+		}else{
+			result = new ReferenceDescription();
+			result.setNodeId(refDescToFilter.getNodeId());
+			
+			//only return requested fields
+			if (mask.contains(BrowseResultMask.ReferenceTypeId)){
+				result.setReferenceTypeId(refDescToFilter.getReferenceTypeId());
+			}
+			if (mask.contains(BrowseResultMask.IsForward)){
+				result.setIsForward(refDescToFilter.getIsForward());
+			}
+			if (mask.contains(BrowseResultMask.NodeClass)){
+				result.setNodeClass(refDescToFilter.getNodeClass());
+			}
+			if (mask.contains(BrowseResultMask.BrowseName)){
+				result.setBrowseName(refDescToFilter.getBrowseName());
+			}
+			if (mask.contains(BrowseResultMask.DisplayName)){
+				result.setDisplayName(refDescToFilter.getDisplayName());
+			}
+			if (mask.contains(BrowseResultMask.TypeDefinition)){
+				result.setTypeDefinition(refDescToFilter.getTypeDefinition());
+			}
+		}
+		
+		return result;
+	}
+	
 	@Override
 	public void onBrowseNext(
 			EndpointServiceRequest<BrowseNextRequest, BrowseNextResponse> serviceReq)

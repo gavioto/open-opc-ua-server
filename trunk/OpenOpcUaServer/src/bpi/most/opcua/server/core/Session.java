@@ -61,6 +61,11 @@ public class Session {
 	 * last nonce which was sent to the client.
 	 */
 	private byte[] lastNonce;
+	
+	/**
+	 * TODO support continuation points, for example for browseNext requests.
+	 */
+	private byte[] continuationPoint;
 
 	/**
 	 * @return the sessionName

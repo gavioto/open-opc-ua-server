@@ -51,7 +51,7 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 	private static final int NONCE_LENGTH = 32;
 	
 	/**
-	 * several calls to the ActivateSession server are done because of
+	 * several calls to the ActivateSession are done because
 	 * <ul>
 	 * <li>the client created a new securechannel</li>
 	 * <li>the client changes its identity. the new credentials have
@@ -206,15 +206,13 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 			EndpointServiceRequest<CreateSessionRequest, CreateSessionResponse> serviceReq)
 			throws ServiceFaultException {
 		LOG.debug("---------------------------- ON CREATE SESSION REQUEST ");
-		LOG.debug(serviceReq);
+//		LOG.debug(serviceReq);
 		
 		CreateSessionRequest req = serviceReq.getRequest();
-		
 		CreateSessionResponse resp = new CreateSessionResponse();
 		
 		// build response header
 		ResponseHeader respHeader = buildRespHeader(req);
-		// set responseheader
 		resp.setResponseHeader(respHeader);
 
 		//OPC UA Profiles supported by the Server
@@ -244,9 +242,9 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		session.setTimeout(getSessionTimeout(req.getRequestedSessionTimeout()));
 		session.setMaxRespMsgSize(req.getMaxResponseMessageSize());
 		
-		NodeId sessionID = NodeId.randomGUID(23);
+		NodeId sessionID = NodeId.randomGUID(1);
 		session.setSessionID(sessionID);
-		NodeId authToken = NodeId.randomGUID(26); //argument is the ns (namespace?)
+		NodeId authToken = NodeId.randomGUID(1);
 		session.setAuthenticationToken(authToken);
 		
 		server.getSessionManager().addSession(session);

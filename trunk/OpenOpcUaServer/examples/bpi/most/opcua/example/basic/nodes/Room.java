@@ -21,7 +21,6 @@ public class Room {
 	@Description
 	private String description;
 	
-	
 	/**
 	 * area of the room in square meter
 	 */
