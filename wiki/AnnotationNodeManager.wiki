@@ -1,4 +1,4 @@
-#summary Annotation based Node mappings
+#summary Overview why to use annotations
 
 = Introduction =
 
