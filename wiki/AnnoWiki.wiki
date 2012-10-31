@@ -98,6 +98,17 @@ public class Room {
 Variables are used to represent the actual data of an Object. For now only simple Variable Values are supported, no complex ones. Variables are annotated with `@UaNode(nodeClass = NodeClass.Variable)` and need to have a field annotated with `@Value` which represents the current value of the variable. So that a Variable appears in the address space it somehow has to be referenced. This is done with the `@Reference` annotation. For the following example consider that a `Room` has a `HumiditySensor`
 
 {{{
+
+@UaNode
+public class Room {
+...
+
+   @Reference(refType = ReferenceType.hasComponent)
+   private HumiditySensor humSens;
+
+...
+}
+
 @UaNode(nodeClass = NodeClass.Variable)
 public class HumiditySensor{
 
@@ -115,17 +126,6 @@ public class HumiditySensor{
 
 ...
 }
-
-@UaNode
-public class Room {
-...
-
-   @Reference(refType = ReferenceType.hasComponent)
-   private HumiditySensor humSens;
-
-...
-}
-
 
 }}}
 
