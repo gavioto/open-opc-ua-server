@@ -4,7 +4,7 @@
     
     <property name="project.name" value="OpenOpcUaServer" />
 	<property name="version" value="0.8" />
-	<property name="build" value="1" />
+	<property name="build" value="2" />
 	<property name="src.dir" value="src" />
 	<property name="lib.dir" value="lib" />
 	<property name="res.dir" value="resource" />
