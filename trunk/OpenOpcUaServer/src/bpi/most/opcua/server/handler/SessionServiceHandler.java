@@ -14,6 +14,7 @@ import org.opcfoundation.ua.builtintypes.NodeId;
 import org.opcfoundation.ua.builtintypes.StatusCode;
 import org.opcfoundation.ua.builtintypes.UnsignedInteger;
 import org.opcfoundation.ua.common.ServiceFaultException;
+import org.opcfoundation.ua.common.ServiceResultException;
 import org.opcfoundation.ua.core.ActivateSessionRequest;
 import org.opcfoundation.ua.core.ActivateSessionResponse;
 import org.opcfoundation.ua.core.AnonymousIdentityToken;
@@ -27,6 +28,7 @@ import org.opcfoundation.ua.core.EndpointDescription;
 import org.opcfoundation.ua.core.ResponseHeader;
 import org.opcfoundation.ua.core.SessionServiceSetHandler;
 import org.opcfoundation.ua.core.SignatureData;
+import org.opcfoundation.ua.core.StatusCodes;
 import org.opcfoundation.ua.core.UserIdentityToken;
 import org.opcfoundation.ua.core.UserNameIdentityToken;
 import org.opcfoundation.ua.core.X509IdentityToken;
@@ -67,10 +69,16 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		LOG.debug(serviceReq);
 		
 		ActivateSessionRequest req = serviceReq.getRequest();
+		ActivateSessionResponse resp = new ActivateSessionResponse();
+		
 		NodeId authToken = req.getRequestHeader().getAuthenticationToken();
 		Session session = server.getSessionManager().getSession(authToken);
 		if (session == null){
 			//TODO return service fault!
+			resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_SessionIdInvalid));
+			resp.setResults(new StatusCode[]{new StatusCode(StatusCodes.Bad_SessionIdInvalid)});
+			sendResp(serviceReq, resp);
+			return;
 		}
 		
 		ExtensionObject oToken = req.getUserIdentityToken();
@@ -140,9 +148,6 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		}else{
 			LOG.debug("--> User wants an anonymous session");
 		}
-		
-		ActivateSessionResponse resp = new ActivateSessionResponse();
-		
 		
 		//TODO call server implementation with user credentials
 		session.setActive(true);

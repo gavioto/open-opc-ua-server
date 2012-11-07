@@ -129,7 +129,7 @@ public class AttributeServiceHandler extends ServiceHandlerBase implements Attri
 			val.setStatusCode(StatusCode.BAD);
 		}
 		
-		LOG.debug("read value " + val.getValue().getValue());
+	//	LOG.debug("read value " + val.getValue().getValue());
 		
 		return val;
 	}

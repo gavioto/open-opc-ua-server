@@ -14,13 +14,13 @@ import org.opcfoundation.ua.builtintypes.NodeId;
  * @author harald
  *
  */
-public class SessionManager {
+public class SessionManager<T> {
 
 	/**
 	 * {@liparamServerSecureChannelnk Session}s managed by the server.
 	 * both, activated and not yet activated sessions are stored here.
 	 */
-	private Map<NodeId, Session> sessions;
+	private Map<NodeId, Session<T>> sessions;
 	
 	/**
 	 * counter which is increased for every created session
@@ -28,20 +28,20 @@ public class SessionManager {
 	private static int sessionCount;
 	
 	public SessionManager(){
-		sessions = new HashMap<NodeId, Session>();
+		sessions = new HashMap<NodeId, Session<T>>();
 	}
 	
-	public Session createSession(){
-		Session newSession = new Session();
+	public Session<T> createSession(){
+		Session<T> newSession = new Session<T>();
 		return newSession;
 	}
 	
-	public void addSession(Session s){
+	public void addSession(Session<T> s){
 		sessions.put(s.getAuthenticationToken(), s);
 	}
 	
-	public Session getSession(NodeId authToken){
-		Session s = sessions.get(authToken);
+	public Session<T> getSession(NodeId authToken){
+		Session<T> s = sessions.get(authToken);
 		
 		if (s == null){
 			//TODO raise service fault

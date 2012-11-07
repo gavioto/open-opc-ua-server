@@ -7,7 +7,7 @@ import org.opcfoundation.ua.core.ApplicationDescription;
 import org.opcfoundation.ua.transport.ServerSecureChannel;
 import org.opcfoundation.ua.transport.security.Cert;
 
-public class Session {
+public class Session<T> {
 
 	/**
 	 * Human readable identification of the session
@@ -20,7 +20,7 @@ public class Session {
 	 */
 	private NodeId sessionID;
 
-	/**
+	/**<T>
 	 * informatin that describes the client application
 	 */
 	private ApplicationDescription clientDescription;
@@ -66,6 +66,11 @@ public class Session {
 	 * TODO support continuation points, for example for browseNext requests.
 	 */
 	private byte[] continuationPoint;
+	
+	/**
+	 * a domain specific custom object.
+	 */
+	private T customObj;
 
 	/**
 	 * @return the sessionName
@@ -225,5 +230,13 @@ public class Session {
 				+ ", secureChannel=" + secureChannel + ", authenticationToken="
 				+ authenticationToken + ", timeout=" + timeout
 				+ ", maxRespMsgSize=" + maxRespMsgSize + "]";
+	}
+
+	public T getCustomObj() {
+		return customObj;
+	}
+
+	public void setCustomObj(T customObj) {
+		this.customObj = customObj;
 	}
 }

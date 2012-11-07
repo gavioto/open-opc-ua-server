@@ -373,15 +373,30 @@ public class AnnotationNodeManager implements INodeManager {
 				allReferences.addAll(mapBeanListToRefDescList(children));
 			}
 			
-			//we also have to add the properties of the object of the given node
+			/*
+			 * we also have to add all annotated children of the object of the given node
+			 * that are fields annotated with
+			 *  @Property
+			 *  @Reference
+			 *  @Variable
+			 *  ....
+			 */
 			allReferences.addAll(buildInBeanReferences(className, beanId));
 		}else if (idParts.length == 3){
 			String propId = idParts[2];
-			//we only want to fetch the references of another member-variable of the bean.
-			//TODO, check if it is a property --> no references
+			ReferenceDescription typeRef;
 			
+//			LOG.debug("______ reading value for property " + nodeId.getValue());
+			//we only want to fetch the references of another member-variable of the bean.
+			
+			//TODO, check if it is a property --> no references, except the typedefinition
+			ReferenceNode typeRefNode = new ReferenceNode(Identifiers.HasTypeDefinition, false, new ExpandedNodeId(Identifiers.PropertyType));
+			typeRef = NodeUtils.mapReferenceNodeToDesc(typeRefNode, addrSpace.getNode(Identifiers.PropertyType));
 			
 			// if its an @Ref --> check the bean for its references
+			// do not forget typedefinition!
+			
+			allReferences.add(typeRef);
 		}
 		
 		
