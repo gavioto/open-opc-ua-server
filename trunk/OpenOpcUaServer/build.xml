@@ -6,8 +6,11 @@
 	<property name="version" value="0.8" />
 	<property name="build" value="2" />
 	<property name="src.dir" value="src" />
+	<property name="examples.dir" value="examples" />
+	<property name="test.dir" value="test" />
 	<property name="lib.dir" value="lib" />
 	<property name="res.dir" value="resource" />
+	<property name="legal.dir" value="legal" />
 	<property name="build.dir" value="build" />
 	<property name="classes.dir" value="tmp" />
 	
@@ -22,12 +25,13 @@
          </fileset>
      </path>
 	
+	<!--  build src files -->
 	<target name="compile" depends="clean">
 		<mkdir dir="${classes.dir}" />
 		<javac 
 			srcdir="${src.dir}" 
 			destdir="${classes.dir}" 
-			classpathref="project.classpath">		
+			classpathref="project.classpath">	
 		</javac>
 	</target>
 	
@@ -37,23 +41,28 @@
 		<jar destfile="${build.dir}/${project.name}-${version}.${build}.jar" basedir="${classes.dir}">
 		    <!-- include resources -->
 			<fileset dir="${res.dir}" includes="**/*" />
+			
 		    <manifest>
 		      <!-- Who is building this jar? -->
 		      <attribute name="Built-By" value="${user.name}"/>
-		      <attribute name="Implementation-Vendor" value="Harald Hofstätter"/>
+		      <attribute name="Implementation-Vendor" value="BPI at Technical University Vienna"/>
 		      <attribute name="Implementation-Title" value="Open OPC UA Server"/>
 		      <attribute name="Implementation-Version" value="${version}.${build}"/>
 		    </manifest>			
 		</jar>
 		
+		<!-- build zip with source files -->
 		<zip destfile="${build.dir}/${project.name}-${version}.${build}-src.zip" basedir="${src.dir}">
 		    <fileset dir="${res.dir}" includes="**/*" />
+		    <fileset dir="${test.dir}" includes="**/*" />
+		    <fileset dir="${examples.dir}" includes="**/*" />
 		</zip>	
 		
 		<!-- includes dependency libs -->
 		<zip destfile="${build.dir}/${project.name} ${version} Redistributables [${build}].zip">
 			<fileset dir="${build.dir}" includes="${project.name}-${version}.${build}.jar" />
 			<fileset dir="${lib.dir}" includes="**/*" />
+			<fileset dir="." includes="${legal.dir}/*" />
 		</zip>
 		
 		<delete dir="${classes.dir}" quiet="true" />
