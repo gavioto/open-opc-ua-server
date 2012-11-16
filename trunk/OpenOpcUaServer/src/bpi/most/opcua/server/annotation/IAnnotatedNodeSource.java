@@ -28,7 +28,7 @@ public interface IAnnotatedNodeSource {
 	 * @return an object from type className identified by the given id or null
 	 *         if such an object does not exist.
 	 */
-	public Object getObjectById(String className, String id);
+	public Object getObjectById(Class<?> clazz, String id);
 
 	/**
 	 * Returns all Objects which represent the first level of information.
@@ -52,6 +52,6 @@ public interface IAnnotatedNodeSource {
 	 *            identifier of the parent Object
 	 * @return All children of the identified parent Object.
 	 */
-	public List<?> getChildren(String parentClassName, String parentId);
+	public List<?> getChildren(Class<?> parentClazz, String parentId);
 
 }

@@ -292,6 +292,7 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		resp.setMaxRequestMessageSize(new UnsignedInteger(0));
 		
 		sendResp(serviceReq, resp);
+		System.out.println("blu");
 	}
 	
 	private void validate(CreateSessionRequest req){

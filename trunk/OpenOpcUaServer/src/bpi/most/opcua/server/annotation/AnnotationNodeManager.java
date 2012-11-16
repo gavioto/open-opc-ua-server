@@ -81,7 +81,7 @@ public class AnnotationNodeManager implements INodeManager {
 	
 	/**
 	 * key: classname; value: nodemapping for the classname of the associated key.
-	 * actually key should equal the values {@link NodeMapping#getJavaClassName()}.
+	 * actually key should equal the values {@link NodeMapping#getNodeName()}.
 	 */
 	Map<String, NodeMapping> nodeMappingsPerClassName;
 	
@@ -152,7 +152,7 @@ public class AnnotationNodeManager implements INodeManager {
 			node.setDisplayName(new LocalizedText(nodeMapping.readDisplNameField(bean), locale));
 			node.setDescription(new LocalizedText(nodeMapping.readDescField(bean), locale));
 			//TODO id is converted to string here, do support other datatypes.
-			node.setNodeId(NodeId.get(IdType.String, nsIndex, buildID(bean, nodeMapping.readIdField(bean).toString())));
+			node.setNodeId(NodeId.get(IdType.String, nsIndex, buildID(nodeMapping, nodeMapping.readIdField(bean).toString())));
 			//TODO set browse name here!!
 			
 			node.setEventNotifier(UnsignedByte.ZERO);
@@ -185,8 +185,8 @@ public class AnnotationNodeManager implements INodeManager {
 	 * idValue
 	 * @return
 	 */
-	protected String buildID(Object bean, String idValue){
-		return bean.getClass().getSimpleName() + ID_SEPARATOR + idValue;
+	protected String buildID(NodeMapping nodeMapping, String idValue){
+		return nodeMapping.getNodeName() + ID_SEPARATOR + idValue;
 	}
 	
 	protected String extractOriginalID(String id){
@@ -250,23 +250,21 @@ public class AnnotationNodeManager implements INodeManager {
 		String[] idParts = nodeid.split(ID_SEPARATOR);
 		LOG.debug(String.format("finding %s with id %s", idParts[0], idParts[1]));
 		
-		String className = idParts[0];
+		String nodeName = idParts[0];
 		String beanId = idParts[1];
-		//get an hopefully annotated object which we can map to a node
-		Object obj = annoNodeSource.getObjectById(className, beanId);
+		
+		NodeMapping nodeMapping = getNodeMapping(nodeName);
+		if (nodeMapping == null){
+			throw new UAServerException("there does not exist a nodemapping for the name: " + nodeName);
+		}
+		
+		//get the desired object from the domain specific implementations
+		Object obj = annoNodeSource.getObjectById(nodeMapping.getClazz(), beanId);
 		
 		if (idParts.length == 2){
 			//the object identified by className and beanId is looked for
 			node = buildNode(obj);
 		}else{
-			//an inBean reference was followed
-			
-			//try to get a nodemapping for the object (or its classname)
-			NodeMapping nodeMapping = getNodeMapping(className, obj);
-			if (nodeMapping == null){
-				throw new UAServerException("there does not exist a nodemapping for the class " + className);
-			}
-			
 			String fieldName = idParts[2];
 			Object oValue = null;
 			Class<?> type = null;
@@ -303,7 +301,7 @@ public class AnnotationNodeManager implements INodeManager {
 			}
 			
 			NodeId dataType = NodeFactory.getNodeIdByDataType(type);
-			String fieldId = className + ID_SEPARATOR + beanId + ID_SEPARATOR + fieldName;
+			String fieldId = nodeName + ID_SEPARATOR + beanId + ID_SEPARATOR + fieldName;
 			node = NodeFactory.getScalarVariableNodeInstance(fieldId, "", fieldName, locale, new NodeId(nsIndex, fieldId), new Variant(oValue), dataType);
 			
 			//TODO add typedefinition reference. take the one from the nodeMApping
@@ -363,12 +361,13 @@ public class AnnotationNodeManager implements INodeManager {
 		LOG.info(nodeId.getValue());
 		List<ReferenceDescription> allReferences = new ArrayList<ReferenceDescription>();
 		String[] idParts = ((String)nodeId.getValue()).split(ID_SEPARATOR);
-		String className = idParts[0];
+		String nodeName = idParts[0];
 		String beanId = idParts[1];		
+		NodeMapping nodeMapping = getNodeMapping(nodeName);
 		
 		if (idParts.length == 2){
 			//here we have references to children - of the given nodeId
-			List<?> children = annoNodeSource.getChildren(className, beanId);
+			List<?> children = annoNodeSource.getChildren(nodeMapping.getClazz(), beanId);
 			if (children != null){
 				allReferences.addAll(mapBeanListToRefDescList(children));
 			}
@@ -381,7 +380,7 @@ public class AnnotationNodeManager implements INodeManager {
 			 *  @Variable
 			 *  ....
 			 */
-			allReferences.addAll(buildInBeanReferences(className, beanId));
+			allReferences.addAll(buildInBeanReferences(nodeName, beanId));
 		}else if (idParts.length == 3){
 			String propId = idParts[2];
 			ReferenceDescription typeRef;
@@ -411,26 +410,26 @@ public class AnnotationNodeManager implements INodeManager {
 	 * @return
 	 * @throws UAServerException 
 	 */
-	private List<ReferenceDescription> buildInBeanReferences(String className, String id) throws UAServerException{
+	private List<ReferenceDescription> buildInBeanReferences(String nodeName, String id) throws UAServerException{
 		List<ReferenceDescription> inBeanReferences = new ArrayList<ReferenceDescription>();
-		
-		/**
-		 * the obj we extract properties and so on from.
-		 */
-		Object obj = annoNodeSource.getObjectById(className, id);
 		
 		/*
 		 * the nodemapping contains all information to 
 		 * create a reference for each property, variable, reference in the bean 
 		 */
-		NodeMapping nodeMapping = getNodeMapping(obj);
+		NodeMapping nodeMapping = getNodeMapping(nodeName);
+		
+		/**
+		 * the obj we extract properties and so on from.
+		 */
+		Object obj = annoNodeSource.getObjectById(nodeMapping.getClazz(), id);
 		
 		//TODO create reference description for all kind of in-bean references
 		//maybe we can also map collections to refDescs and hence delete the getChildren method
 		for (ReferenceMapping refMapping: nodeMapping.getReferencesByName().values()){
 			try {
 				String fieldName = refMapping.getFieldName();
-				String fieldId = className + ID_SEPARATOR + id + ID_SEPARATOR + fieldName;
+				String fieldId = nodeMapping.getNodeName() + ID_SEPARATOR + id + ID_SEPARATOR + fieldName;
 				
 				//TODO support explicit displayname in annotation
 				String displayName = fieldName;
@@ -499,15 +498,15 @@ public class AnnotationNodeManager implements INodeManager {
 			if (nm == null){
 				//there does not existing an nodemapping for the giving class, lets create one
 				nm = UaNodeAnnoIntrospector.introspect(obj);
-				nodeMappingsPerClassName.put(obj.getClass().getName(), nm);
+				nodeMappingsPerClassName.put(nm.getNodeName(), nm);
 			}
 		}
 		
 		return nm;
 	}
 
-	private NodeMapping getNodeMapping(String className){
-		return nodeMappingsPerClassName.get(className);
+	private NodeMapping getNodeMapping(String nodeName){
+		return nodeMappingsPerClassName.get(nodeName);
 	}
 	
 	/**
@@ -519,9 +518,9 @@ public class AnnotationNodeManager implements INodeManager {
 	 * @return
 	 * @throws UAServerException 
 	 */
-	private NodeMapping getNodeMapping(String className, Object obj) throws UAServerException{
-		//try to get a nodemapping for the object (or its classname)
-		NodeMapping nodeMapping = getNodeMapping(className);
+	private NodeMapping getNodeMapping(String nodeName, Object obj) throws UAServerException{
+		//try to get a nodemapping for the object (or its nodeName)
+		NodeMapping nodeMapping = getNodeMapping(nodeName);
 		if (nodeMapping == null){
 			nodeMapping = getNodeMapping(obj);
 		}

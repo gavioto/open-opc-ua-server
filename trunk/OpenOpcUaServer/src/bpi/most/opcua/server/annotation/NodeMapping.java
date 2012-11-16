@@ -19,7 +19,11 @@ public class NodeMapping {
 	/**
 	 * java class this node mapping is associated to
 	 */
-	private String javaClassName;
+	private Class<?> clazz;
+	/**
+	 * the name which is used as ID in a node for the associated java class (clazz field)
+	 */
+	private String nodeName;
 
 	/**
 	 * NodeClass which should be used when creating nodes from this NodeMapping
@@ -57,10 +61,11 @@ public class NodeMapping {
 	 * @param descField
 	 * @param propertyFields
 	 */
-	public NodeMapping(String javaClassName, NodeClass nodeClass,
+	public NodeMapping(Class<?> clazz, NodeClass nodeClass,
 			Field idField, Field displNameField, Field descField,
 			Map<String, ReferenceMapping> referencesByName) {
-		this.javaClassName = javaClassName;
+		this.clazz = clazz;
+		this.nodeName = clazz.getSimpleName(); //for now its the name of the class. later it can be declared with @UaNode annotation on the Java Type.
 		this.nodeClass = nodeClass;
 		this.idField = idField;
 		this.displNameField = displNameField;
@@ -69,17 +74,31 @@ public class NodeMapping {
 	}
 
 	/**
-	 * @return the javaClassName
+	 * @return the clazz
 	 */
-	public String getJavaClassName() {
-		return javaClassName;
+	public Class<?> getClazz() {
+		return clazz;
 	}
 
 	/**
-	 * @param javaClassName the javaClassName to set
+	 * @param clazz the clazz to set
 	 */
-	public void setJavaClassName(String javaClassName) {
-		this.javaClassName = javaClassName;
+	public void setClazz(Class<?> clazz) {
+		this.clazz = clazz;
+	}
+	
+	/**
+	 * @return the nodeName
+	 */
+	public String getNodeName() {
+		return nodeName;
+	}
+
+	/**
+	 * @param nodeName the nodeName to set
+	 */
+	public void setNodeName(String nodeName) {
+		this.nodeName = nodeName;
 	}
 
 	/**

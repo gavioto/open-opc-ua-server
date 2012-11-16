@@ -24,7 +24,7 @@ public class TestUaNodeIntrospector {
 		assertEquals(testNode.getDescription(), mapping.readDescField(testNode));
 		assertEquals(testNode.getID(), mapping.readIdField(testNode));
 		assertEquals(testNode.getName(), mapping.readDisplNameField(testNode));
-		assertEquals(testNode.getClass().getSimpleName(), mapping.getJavaClassName());
+		assertEquals(testNode.getClass(), mapping.getClazz());
 		
 		//properties
 		assertEquals(2, mapping.getReferencesByName().size());

@@ -25,9 +25,6 @@ import bpi.most.opcua.server.annotation.IAnnotatedNodeSource;
  */
 public class SampleNodeManager implements IAnnotatedNodeSource{
 
-	private final String FLOOR_NODE = Floor.class.getSimpleName();
-	private final String ROOM_NODE = Room.class.getSimpleName();
-	
 	/**
 	 * two maps to access floors and rooms by their ID
 	 */
@@ -68,12 +65,12 @@ public class SampleNodeManager implements IAnnotatedNodeSource{
 	 * lookup in the correct map (allFloors vs allRooms)
 	 */
 	@Override
-	public Object getObjectById(String className, String id) {
+	public Object getObjectById(Class<?> clazz, String id) {
 		Object result = null;
 		
-		if (FLOOR_NODE.equals(className)){
+		if (Floor.class.equals(clazz)){
 			result = allFloors.get(Integer.parseInt(id));
-		}else if (ROOM_NODE.equals(className)){
+		}else if (Room.class.equals(clazz)){
 			result = allRooms.get(Integer.parseInt(id));
 		}
 		
@@ -97,9 +94,9 @@ public class SampleNodeManager implements IAnnotatedNodeSource{
 	 * return floors for a particular buildings, or rooms for a floor.
 	 */
 	@Override
-	public List<?> getChildren(String parentClassName, String parentId) {
+	public List<?> getChildren(Class<?> parentClazz, String parentId) {
 		List<?> result = null;
-		if (FLOOR_NODE.equals(parentClassName)){
+		if (Floor.class.equals(parentClazz)){
 			result = allFloors.get(Integer.parseInt(parentId)).getRooms();
 		}
 		return result;

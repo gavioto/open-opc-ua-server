@@ -66,7 +66,7 @@ public class UaNodeAnnoIntrospector {
 			}
 			
 			//TODO do some validation and throw exception if for example displayname is missing 
-			NodeMapping nodeMap = new NodeMapping(obj.getClass().getSimpleName(), objAnno.nodeClass(), idField, displNameField, descField, referencesByName);
+			NodeMapping nodeMap = new NodeMapping(obj.getClass(), objAnno.nodeClass(), idField, displNameField, descField, referencesByName);
 			nodeMap.setValueField(valueField);
 			return nodeMap;
 		}else{
