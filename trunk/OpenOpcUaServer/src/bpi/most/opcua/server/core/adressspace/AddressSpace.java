@@ -29,6 +29,13 @@ public class AddressSpace {
 	
 	private static final Logger LOG = Logger.getLogger(AddressSpace.class);
 	
+	//there is only one addressspace
+	private static final AddressSpace INSTANCE = new AddressSpace();
+	private AddressSpace(){}
+	public static AddressSpace getInstance(){
+		return INSTANCE;
+	}
+	
 	/**
 	 * an insert-ordered map of all namespace (NS) nodeMgrs of the addressspace. key is the NS-index of the servers namespacearray,
 	 * value is an {@link INodeManager}. the nodeMgrs are called
@@ -55,8 +62,8 @@ public class AddressSpace {
 	}
 	
 	public List<ReferenceDescription> browseNode(NodeId nodeId){
-		Stopwatch sw = new Stopwatch();
-		sw.start();
+//		Stopwatch sw = new Stopwatch();
+//		sw.start();
 		
 		//check ns for nodeId
 		List<ReferenceDescription> refDescs = new ArrayList<ReferenceDescription>();
@@ -78,8 +85,8 @@ public class AddressSpace {
 			}
 		}
 	
-		sw.stop();
-		LOG.debug("---> browsing took " + sw.getDuration() + "ms"); 
+//		sw.stop();
+//		LOG.debug("---> browsing took " + sw.getDuration() + "ms"); 
 		
 		return refDescs;
 	}

@@ -57,7 +57,7 @@ public class TestCoreNodeManager {
 	public void testServerType() throws UAServerException{
 		//set up nodemanager and addressspace
 		final int nsIndex = 0;
-		AddressSpace as = new AddressSpace();
+		AddressSpace as = AddressSpace.getInstance();
 		as.addNodeManager(nsIndex, mngr);
 		mngr.init(as, nsIndex);
 		

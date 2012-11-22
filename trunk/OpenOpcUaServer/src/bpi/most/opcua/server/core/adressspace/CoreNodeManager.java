@@ -1,6 +1,8 @@
 package bpi.most.opcua.server.core.adressspace;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -55,9 +57,7 @@ public class CoreNodeManager implements INodeManager {
 	 * managed nodes of the address space
 	 */
 	private Map<NodeId, Node> nodes;
-	
 	private int nsIndex = 0;
-	
 	private AddressSpace addrSpace;
 	
 	public CoreNodeManager(){
@@ -206,6 +206,25 @@ public class CoreNodeManager implements INodeManager {
 			v.setHistorizing(false);
 
 			v.setValue(new Variant(ServerState.Running));
+			node = v;
+		}
+		
+		else if (nodeId.equals(Identifiers.Server_ServerStatus_CurrentTime)) {
+			LOG.info("creating serverstatus state variable node");
+			VariableNode v = new VariableNode();
+			v.setNodeClass(NodeClass.Variable);
+			v.setNodeId(nodeId);
+			v.setDataType(Identifiers.ServerState);
+			v.setValueRank(-1);
+			v.setArrayDimensions(null);
+			v.setBrowseName(new QualifiedName("State"));
+			v.setAccessLevel(AccessLevel.getMask(AccessLevel.CurrentRead));
+			v.setUserAccessLevel(AccessLevel.getMask(AccessLevel.CurrentRead));
+			v.setDisplayName(new LocalizedText("State", Locale.ENGLISH));
+			v.setMinimumSamplingInterval(-1.0);
+			v.setHistorizing(false);
+
+			v.setValue(new Variant(new DateTime(Calendar.getInstance())));
 			node = v;
 		}
 		

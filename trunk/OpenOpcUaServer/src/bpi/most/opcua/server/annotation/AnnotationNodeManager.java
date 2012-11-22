@@ -11,6 +11,7 @@ import org.opcfoundation.ua.builtintypes.DataValue;
 import org.opcfoundation.ua.builtintypes.ExpandedNodeId;
 import org.opcfoundation.ua.builtintypes.LocalizedText;
 import org.opcfoundation.ua.builtintypes.NodeId;
+import org.opcfoundation.ua.builtintypes.QualifiedName;
 import org.opcfoundation.ua.builtintypes.UnsignedByte;
 import org.opcfoundation.ua.builtintypes.UnsignedInteger;
 import org.opcfoundation.ua.builtintypes.Variant;
@@ -48,8 +49,8 @@ public class AnnotationNodeManager implements INodeManager {
 	private Locale locale = Locale.ENGLISH;
 	
 	private int nsIndex;
-	
 	private AddressSpace addrSpace;
+	private Map<NodeId, Node> typeNodes = new HashMap<NodeId, Node>();
 	
 	/**
 	 * created rootnote for nodes managed by this nodemanager.
@@ -151,16 +152,17 @@ public class AnnotationNodeManager implements INodeManager {
 			
 			node.setDisplayName(new LocalizedText(nodeMapping.readDisplNameField(bean), locale));
 			node.setDescription(new LocalizedText(nodeMapping.readDescField(bean), locale));
-			//TODO id is converted to string here, do support other datatypes.
 			node.setNodeId(NodeId.get(IdType.String, nsIndex, buildID(nodeMapping, nodeMapping.readIdField(bean).toString())));
+			
 			//TODO set browse name here!!
+			node.setBrowseName(new QualifiedName(nodeMapping.getFieldName(nodeMapping.getIdField())));
 			
 			node.setEventNotifier(UnsignedByte.ZERO);
 			node.setUserWriteMask(UnsignedInteger.ZERO);
 			node.setWriteMask(UnsignedInteger.ZERO);
 			
-			//TODO add typedefinition reference. take the one from the nodeMApping
-			ExpandedNodeId typeDef = null;
+			//create typedefinition reference for the node
+			ExpandedNodeId typeDef;
 			if (nodeMapping.getTypeDefinition() != null){
 				typeDef = nodeMapping.getTypeDefinition();
 			}else{
@@ -200,6 +202,29 @@ public class AnnotationNodeManager implements INodeManager {
 		this.nsIndex = nsIndex;
 		
 		buildRootNode();
+		
+		//for all nodemappings we have, we build typenodes
+		for (NodeMapping nodeMapping: nodeMappingsPerClassName.values()){
+			//create a typenode for the object.
+			TypeNodeBuilder typeBuilder = new TypeNodeBuilder(locale, nsIndex);
+			List<Node> nodes = typeBuilder.buildTypeNode(nodeMapping);
+			Node typeNode = nodes.get(0);
+
+			//set the created typedefinition for this nodemapping
+			nodeMapping.setTypeDefinition(NodeUtils.toExpandedNodeId(typeNode.getNodeId()));
+			
+			//add all created nodes to our typenode map
+			for (Node n: nodes){
+				typeNodes.put(n.getNodeId(), n);
+			}
+			
+			//add the typenode to the correct parent type
+			try {
+				NodeUtils.addReferenceToNode(addrSpace.getNode(Identifiers.BaseObjectType), new ReferenceNode(Identifiers.HasSubtype, false, NodeUtils.toExpandedNodeId(typeNode.getNodeId())));
+			} catch (UAServerException e) {
+				LOG.error(e.getMessage(), e);
+			}
+		}
 	}
 	
 	/**
@@ -248,6 +273,12 @@ public class AnnotationNodeManager implements INodeManager {
 		
 		String nodeid = (String) nodeId.getValue();
 		String[] idParts = nodeid.split(ID_SEPARATOR);
+		
+		if (((String)nodeId.getValue()).contains("Type")){
+			//TODO check if it is a type node of our nodemappings, if so --> return node from corenodemanager
+			return typeNodes.get(nodeId);
+		}
+		
 		LOG.debug(String.format("finding %s with id %s", idParts[0], idParts[1]));
 		
 		String nodeName = idParts[0];
@@ -361,6 +392,13 @@ public class AnnotationNodeManager implements INodeManager {
 		LOG.info(nodeId.getValue());
 		List<ReferenceDescription> allReferences = new ArrayList<ReferenceDescription>();
 		String[] idParts = ((String)nodeId.getValue()).split(ID_SEPARATOR);
+		
+		if (((String)nodeId.getValue()).contains("Type")){
+			//TODO check if it is a type node of our nodemappings, if so --> return node from corenodemanager
+			return addrSpace.getCoreNodeManager().getReferences(nodeId);
+		}
+		
+		
 		String nodeName = idParts[0];
 		String beanId = idParts[1];		
 		NodeMapping nodeMapping = getNodeMapping(nodeName);
@@ -381,6 +419,11 @@ public class AnnotationNodeManager implements INodeManager {
 			 *  ....
 			 */
 			allReferences.addAll(buildInBeanReferences(nodeName, beanId));
+			
+			//create typedefinition for the node
+			ReferenceNode typeRefNode = new ReferenceNode(Identifiers.HasTypeDefinition, false, nodeMapping.getTypeDefinition());
+			ReferenceDescription typeRef = NodeUtils.mapReferenceNodeToDesc(typeRefNode, addrSpace.getNode(nodeMapping.getTypeDefinition()));
+			allReferences.add(typeRef);
 		}else if (idParts.length == 3){
 			String propId = idParts[2];
 			ReferenceDescription typeRef;

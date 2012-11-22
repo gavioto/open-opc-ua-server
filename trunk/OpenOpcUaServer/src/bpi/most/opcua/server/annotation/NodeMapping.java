@@ -35,7 +35,7 @@ public class NodeMapping {
 	private Field descField;
 	
 	/**
-	 * type definition created for this nodemapping (and the underlying javaClass).S
+	 * type definition created for this nodemapping (and the underlying javaClass)
 	 */
 	private ExpandedNodeId typeDefinition;
 	
@@ -275,5 +275,7 @@ public class NodeMapping {
 		return referencesByName.get(fieldName);
 	}
 	
-	
+	public String getFieldName(Field field){
+		return field.getName();
+	}
 }

@@ -5,10 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.opcfoundation.ua.builtintypes.NodeId;
 import org.opcfoundation.ua.core.Identifiers;
 import org.opcfoundation.ua.core.NodeClass;
+import org.opcfoundation.ua.core.VariableNode;
 
 import bpi.most.opcua.server.core.UAServerException;
+import bpi.most.opcua.server.core.adressspace.NodeFactory;
+import bpi.most.opcua.server.core.util.NodeUtils;
 
 /**
  * introspects classes which are annotated witch {@link UaNode}
@@ -39,8 +43,8 @@ public class UaNodeAnnoIntrospector {
 			Field displNameField = null;
 			Field descField = null;
 			Field valueField = null;
-			
 			Map<String, ReferenceMapping> referencesByName = new HashMap<String, ReferenceMapping>();
+			
 			for (Field field: obj.getClass().getDeclaredFields()){
 				if(field.isAnnotationPresent(ID.class)){
 					idField = field;
@@ -67,10 +71,10 @@ public class UaNodeAnnoIntrospector {
 			
 			//TODO do some validation and throw exception if for example displayname is missing 
 			NodeMapping nodeMap = new NodeMapping(obj.getClass(), objAnno.nodeClass(), idField, displNameField, descField, referencesByName);
+			nodeMap.setTypeDefinition(NodeUtils.toExpandedNodeId(NodeUtils.getBaseTypeNodeId(objAnno.nodeClass())));
 			nodeMap.setValueField(valueField);
 			return nodeMap;
 		}else{
-			//TODO introduce own exception here
 			throw new UAServerException("class not correctly annotated with UANode(nodeClass=...)");
 		}
 	}
@@ -78,9 +82,11 @@ public class UaNodeAnnoIntrospector {
 	private static ReferenceMapping refMapForProperty(Field field){
 		ReferenceMapping refMapping = new ReferenceMapping();
 		refMapping.setField(field);
+		refMapping.setDisplayName(field.getName());
+		refMapping.setBrowseName(field.getName());
 		refMapping.setNodeClass(NodeClass.Variable);
 		refMapping.setReferenceType(Identifiers.HasProperty);
-		refMapping.setDatatype(Identifiers.PropertyType);
+		refMapping.setTypeDefinition(Identifiers.PropertyType);
 		return refMapping;
 	}
 	
@@ -90,6 +96,8 @@ public class UaNodeAnnoIntrospector {
 		Reference refAnno = field.getAnnotation(Reference.class);
 		
 		refMapping.setField(field);
+		refMapping.setDisplayName(field.getName());
+		refMapping.setBrowseName(field.getName());
 		//TODO find out actual node class
 		refMapping.setNodeClass(NodeClass.Variable);
 		refMapping.setReferenceType(refAnno.refType().nodeId());
@@ -112,5 +120,20 @@ public class UaNodeAnnoIntrospector {
 			LOG.debug(e.getMessage(), e);
 		}
 		return nm;
+	}
+	
+	/**
+	 * 
+	 * sets the fields DataType, ValueRank and ArrayDimension in the given {@link VariableNode}
+	 * so that they represent the given {@link Field}s datatype.
+	 * 
+	 * @param variable
+	 * @param f
+	 */
+	public static void setDataTypeFields(VariableNode variable, Field f){
+		Class<?> type = f.getType();
+		
+		variable.setValueRank(NodeUtils.getValueRank(type));
+		variable.setDataType(NodeFactory.getNodeIdByDataType(type));
 	}
 }

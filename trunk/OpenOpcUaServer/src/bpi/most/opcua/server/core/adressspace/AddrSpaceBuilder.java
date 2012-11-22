@@ -24,7 +24,7 @@ public class AddrSpaceBuilder {
 	
 	public AddrSpaceBuilder(){
 		//create a new instance
-		addrSpace = new AddressSpace();
+		addrSpace = AddressSpace.getInstance();
 		
 		managers = new LinkedHashMap<Integer, INodeManager>();
 		managers.put(0, new CoreNodeManager());

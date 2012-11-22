@@ -152,7 +152,11 @@ public class NodeFactory {
 	public static NodeId getNodeIdByDataType(Class<?> type){
 		NodeId id = null;
 
-		id = BuiltinsMap.ID_CLASS_MAP.getLeft(type);
+		if (type.isArray()){
+			id = BuiltinsMap.ID_CLASS_MAP.getLeft(type.getComponentType());
+		}else{
+			id = BuiltinsMap.ID_CLASS_MAP.getLeft(type);
+		}
 		
 		return id;
 	}

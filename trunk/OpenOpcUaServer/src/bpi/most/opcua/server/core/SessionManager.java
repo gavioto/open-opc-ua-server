@@ -10,6 +10,8 @@ import org.opcfoundation.ua.builtintypes.NodeId;
  * clients have to make some kind of a touch on the session if an
  * requests appears. actually this can be done by the getSessionmethod here
  * 
+ * create an ISessionManager with several implementations
+ *   one could hold the session in a memcache so that several instances of the manager can be used. hence also several instances of the opc ua server could be used.
  * 
  * @author harald
  *

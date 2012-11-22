@@ -1,5 +1,7 @@
 package bpi.most.opcua.server.core;
 
+import java.util.Locale;
+
 import org.opcfoundation.ua.builtintypes.NodeId;
 import org.opcfoundation.ua.builtintypes.UnsignedInteger;
 import org.opcfoundation.ua.core.ActivateSessionRequest;
@@ -7,6 +9,15 @@ import org.opcfoundation.ua.core.ApplicationDescription;
 import org.opcfoundation.ua.transport.ServerSecureChannel;
 import org.opcfoundation.ua.transport.security.Cert;
 
+/**
+ * 
+ * TODO introduce ISession interface which only supports
+ * read access to several properties. like continuation points and so on.
+ * 
+ * @author harald
+ *
+ * @param <T>
+ */
 public class Session<T> {
 
 	/**
@@ -66,6 +77,11 @@ public class Session<T> {
 	 * TODO support continuation points, for example for browseNext requests.
 	 */
 	private byte[] continuationPoint;
+	
+	/**
+	 * {@link Locale} of the client
+	 */
+	private Locale locale = Locale.ENGLISH;
 	
 	/**
 	 * a domain specific custom object.
@@ -238,5 +254,33 @@ public class Session<T> {
 
 	public void setCustomObj(T customObj) {
 		this.customObj = customObj;
+	}
+
+	/**
+	 * @return the continuationPoint
+	 */
+	public byte[] getContinuationPoint() {
+		return continuationPoint;
+	}
+
+	/**
+	 * @param continuationPoint the continuationPoint to set
+	 */
+	public void setContinuationPoint(byte[] continuationPoint) {
+		this.continuationPoint = continuationPoint;
+	}
+
+	/**
+	 * @return the locale
+	 */
+	public Locale getLocale() {
+		return locale;
+	}
+
+	/**
+	 * @param locale the locale to set
+	 */
+	public void setLocale(Locale locale) {
+		this.locale = locale;
 	}
 }

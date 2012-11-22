@@ -28,9 +28,19 @@ public class ReferenceMapping {
 	private String description;
 	
 	/**
-	 * datatype of the target node
+	 * displayname for the referenced node
 	 */
-	private NodeId datatype;
+	private String displayName;
+	
+	/**
+	 * browsename for the referenced node
+	 */
+	private String browseName;
+	
+	/**
+	 * typeDefinition of the target node
+	 */
+	private NodeId typeDefinition;
 	
 	/**
 	 * nodeclass of the target node
@@ -80,19 +90,47 @@ public class ReferenceMapping {
 	}
 
 	/**
-	 * @return the datatype
+	 * @return the displayName
 	 */
-	public NodeId getDatatype() {
-		return datatype;
+	public String getDisplayName() {
+		return displayName;
 	}
 
 	/**
-	 * @param datatype the datatype to set
+	 * @param displayName the displayName to set
 	 */
-	public void setDatatype(NodeId datatype) {
-		this.datatype = datatype;
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
-	
+
+	/**
+	 * @return the browseName
+	 */
+	public String getBrowseName() {
+		return browseName;
+	}
+
+	/**
+	 * @param browseName the browseName to set
+	 */
+	public void setBrowseName(String browseName) {
+		this.browseName = browseName;
+	}
+
+	/**
+	 * @return the typeDefinition
+	 */
+	public NodeId getTypeDefinition() {
+		return typeDefinition;
+	}
+
+	/**
+	 * @param typeDefinition the typeDefinition to set
+	 */
+	public void setTypeDefinition(NodeId typeDefinition) {
+		this.typeDefinition = typeDefinition;
+	}
+
 	public String getFieldName(){
 		return field.getName();
 	}
