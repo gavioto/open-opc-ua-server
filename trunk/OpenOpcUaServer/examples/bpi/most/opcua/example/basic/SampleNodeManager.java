@@ -36,8 +36,8 @@ public class SampleNodeManager implements IAnnotatedNodeSource{
 		allFloors = new HashMap<Integer, Floor>();
 		allRooms = new HashMap<Integer, Room>();
 		
-		Floor f0 = new Floor(0, "ground floor", "just the ground floor");
-		Floor f1 = new Floor(1, "first floor", "the first and last floor");
+		Floor f0 = new Floor(0, "ground floor", "just the ground floor", false);
+		Floor f1 = new Floor(1, "first floor", "the first and last floor", true);
 		
 		//rooms for ground floor
 		Room r01 = new Room(1, "room 01", "big room", 45.34, 3, new HumiditySensor(0.321), new TemperatureSensor(21.2));
@@ -97,7 +97,7 @@ public class SampleNodeManager implements IAnnotatedNodeSource{
 	public List<?> getChildren(Class<?> parentClazz, String parentId) {
 		List<?> result = null;
 		if (Floor.class.equals(parentClazz)){
-			result = allFloors.get(Integer.parseInt(parentId)).getRooms();
+	//		result = allFloors.get(Integer.parseInt(parentId)).getRooms();
 		}
 		return result;
 	}

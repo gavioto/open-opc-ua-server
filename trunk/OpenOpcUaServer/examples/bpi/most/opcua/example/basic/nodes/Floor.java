@@ -6,6 +6,7 @@ import bpi.most.opcua.server.annotation.AnnotationNodeManager;
 import bpi.most.opcua.server.annotation.Description;
 import bpi.most.opcua.server.annotation.DisplayName;
 import bpi.most.opcua.server.annotation.ID;
+import bpi.most.opcua.server.annotation.Property;
 import bpi.most.opcua.server.annotation.UaNode;
 
 @UaNode
@@ -29,6 +30,9 @@ public class Floor {
 	@Description
 	private String description;
 	
+	@Property
+	private Boolean fireDoor;
+	
 	private List<Room> rooms;
 
 	/**
@@ -42,10 +46,11 @@ public class Floor {
 	 * @param name
 	 * @param description
 	 */
-	public Floor(int level, String name, String description) {
+	public Floor(int level, String name, String description, Boolean fireDoor) {
 		this.level = level;
 		this.name = name;
 		this.description = description;
+		this.fireDoor = fireDoor;
 	}
 
 	/**
