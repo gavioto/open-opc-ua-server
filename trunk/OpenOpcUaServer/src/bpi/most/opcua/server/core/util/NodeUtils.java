@@ -42,23 +42,23 @@ public class NodeUtils {
 		return node != null && node.getNodeId() != null;
 	}
 
-	public static ReferenceDescription mapReferenceNodeToDesc(ReferenceNode refNode, Node referencedNode) {
+	public static ReferenceDescription mapReferenceNodeToDesc(ReferenceNode refNode, Node targetNode) {
 		ReferenceDescription refDesc;
 
-		refDesc = getRefDescForNode(referencedNode, refNode.getReferenceTypeId(), !refNode.getIsInverse());
+		refDesc = getRefDescForNode(targetNode, refNode.getReferenceTypeId(), !refNode.getIsInverse());
 
 		return refDesc;
 	}
 
-	public static ReferenceDescription getRefDescForNode(Node referencedNode, NodeId referenceType, boolean isForward) {
+	public static ReferenceDescription getRefDescForNode(Node targetNode, NodeId referenceType, boolean isForward) {
 		ReferenceDescription refDesc = new ReferenceDescription();
 
-		refDesc.setBrowseName(referencedNode.getBrowseName());
-		refDesc.setDisplayName(referencedNode.getDisplayName());
-		refDesc.setNodeClass(referencedNode.getNodeClass());
+		refDesc.setBrowseName(targetNode.getBrowseName());
+		refDesc.setDisplayName(targetNode.getDisplayName());
+		refDesc.setNodeClass(targetNode.getNodeClass());
 		refDesc.setReferenceTypeId(referenceType);
-		refDesc.setTypeDefinition(getTypeDefinition(referencedNode));
-		refDesc.setNodeId(toExpandedNodeId(referencedNode.getNodeId()));
+		refDesc.setTypeDefinition(getTypeDefinition(targetNode));
+		refDesc.setNodeId(toExpandedNodeId(targetNode.getNodeId()));
 		refDesc.setIsForward(isForward);
 
 		return refDesc;

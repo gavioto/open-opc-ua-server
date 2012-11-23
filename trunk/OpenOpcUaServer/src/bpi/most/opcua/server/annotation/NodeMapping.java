@@ -35,7 +35,9 @@ public class NodeMapping {
 	private Field descField;
 	
 	/**
-	 * type definition created for this nodemapping (and the underlying javaClass)
+	 * type definition created for this nodemapping (and the underlying javaClass).
+	 * whenever a node is created by this Nodemapping, his HasTypeDefinition relationship
+	 * points to this {@link ExpandedNodeId}.
 	 */
 	private ExpandedNodeId typeDefinition;
 	

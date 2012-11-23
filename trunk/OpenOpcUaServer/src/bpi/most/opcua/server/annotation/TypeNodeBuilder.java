@@ -23,7 +23,6 @@ import org.opcfoundation.ua.core.VariableNode;
 
 import bpi.most.opcua.server.core.UAServerException;
 import bpi.most.opcua.server.core.adressspace.AddressSpace;
-import bpi.most.opcua.server.core.adressspace.INodeManager;
 import bpi.most.opcua.server.core.adressspace.NodeFactory;
 import bpi.most.opcua.server.core.util.NodeUtils;
 
@@ -132,6 +131,17 @@ public class TypeNodeBuilder {
 		//add typedefinition
 		NodeUtils.addReferenceToNode(newNode, new ReferenceNode(Identifiers.HasTypeDefinition, false, new ExpandedNodeId(refMapping.getTypeDefinition())));
 		
+		//TODO add modelling rule; are they really mandatory?
+		
 		return newNode;
+	}
+	
+	/**
+	 * creates either a Mandatory or Optional Modelling Rule for the given node
+	 * and adds it to his references.
+	 * @param node
+	 * @param mandatory
+	 */
+	private void addModellingRuleNode(Node node, boolean mandatory){
 	}
 }

@@ -1,13 +1,11 @@
 package bpi.most.opcua.server.core.adressspace;
 
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.opcfoundation.ua.builtintypes.DataValue;
 import org.opcfoundation.ua.builtintypes.NodeId;
 import org.opcfoundation.ua.builtintypes.UnsignedInteger;
 import org.opcfoundation.ua.core.Node;
-import org.opcfoundation.ua.core.ReferenceDescription;
+import org.opcfoundation.ua.core.ReferenceNode;
 
 /**
  * manages all nodes of the local server instance. this includes for example
@@ -27,7 +25,7 @@ public class ServerNodeManager implements INodeManager {
 	}
 
 	@Override
-	public List<ReferenceDescription> getReferences(NodeId nodeId) {
+	public ReferenceNode[] getReferences(NodeId nodeId) {
 		// TODO Auto-generated method stub
 		return null;
 	}

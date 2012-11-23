@@ -61,7 +61,8 @@ public class TestCoreNodeManager {
 		as.addNodeManager(nsIndex, mngr);
 		mngr.init(as, nsIndex);
 		
-		List<ReferenceDescription> refs = mngr.getReferences(Identifiers.ServerType);
-		assertFalse(refs.isEmpty());
+		ReferenceNode[] refs = mngr.getReferences(Identifiers.ServerType);
+		assertNotNull(refs);
+		assertTrue(refs.length > 0);
 	}
 }

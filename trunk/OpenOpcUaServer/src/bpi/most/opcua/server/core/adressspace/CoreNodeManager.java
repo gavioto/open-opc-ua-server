@@ -2,7 +2,6 @@ package bpi.most.opcua.server.core.adressspace;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -38,7 +37,8 @@ import bpi.most.opcua.server.core.util.NodeUtils;
 
 /**
  * manages all Nodes of the standard opc ua information model in
- * the http://opcfoundation.org/UA/ namespace
+ * the http://opcfoundation.org/UA/ namespace. he parses the standard
+ * nodes from an XML and stores them in a map for accessing.
  * 
  * @author harald
  *
@@ -237,26 +237,18 @@ public class CoreNodeManager implements INodeManager {
 	}
 
 	@Override
-	public List<ReferenceDescription> getReferences(NodeId nodeId) throws UAServerException {
-		List<ReferenceDescription> refDescs = new ArrayList<ReferenceDescription>();
+	public ReferenceNode[] getReferences(NodeId nodeId) throws UAServerException {
+		ReferenceNode[] refs = null;
 		
 		//get the node
 		Node node = getNode(nodeId);
 		
 		//map the references
-		if (node != null && node.getReferences() != null){
-			for (ReferenceNode refNode: node.getReferences()){
-				//it could be that the targetNode is not from this nodemanager. therefore we get the targetNode through the addrSpace
-				Node targetNode = addrSpace.getNode(NodeUtils.toNodeId(refNode.getTargetId()));
-				if (targetNode != null){
-					//the target node does really exist. it can be in opc ua that only a reference exists, but the target node does not!
-					ReferenceDescription refDesc = NodeUtils.mapReferenceNodeToDesc(refNode, targetNode);
-					refDescs.add(refDesc);
-				}
-			}
+		if (node != null){
+			refs = node.getReferences();
 		}
 		
-		return refDescs;
+		return refs;
 	}
 
 	@Override

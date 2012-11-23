@@ -1,12 +1,10 @@
 package bpi.most.opcua.server.core.adressspace;
 
-import java.util.List;
-
 import org.opcfoundation.ua.builtintypes.DataValue;
 import org.opcfoundation.ua.builtintypes.NodeId;
 import org.opcfoundation.ua.builtintypes.UnsignedInteger;
 import org.opcfoundation.ua.core.Node;
-import org.opcfoundation.ua.core.ReferenceDescription;
+import org.opcfoundation.ua.core.ReferenceNode;
 
 import bpi.most.opcua.server.core.UAServerException;
 
@@ -49,7 +47,7 @@ public interface INodeManager {
 	
 	public Node getNode(NodeId nodeId) throws UAServerException;
 	
-	public List<ReferenceDescription> getReferences(NodeId nodeId) throws UAServerException;
+	public ReferenceNode[] getReferences(NodeId nodeId) throws UAServerException;
 	
 	public DataValue readNodeAttribute(NodeId nodeId, UnsignedInteger attrId);
 	

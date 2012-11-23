@@ -29,7 +29,6 @@ import bpi.most.opcua.server.core.adressspace.NodeFactory;
 import bpi.most.opcua.server.core.util.NodeUtils;
 
 /**
- * TODO:
  * generating classes at runtime for faster access:
  * http://www.ibm.com/developerworks/java/library/j-dyn0610/
  * 
@@ -50,6 +49,12 @@ public class AnnotationNodeManager implements INodeManager {
 	
 	private int nsIndex;
 	private AddressSpace addrSpace;
+	
+	/**
+	 * we manage all created typenodes (from annotated POJOs) on our own. this
+	 * is because they belong to our namespace index, hence we are called from
+	 * the {@link AddressSpace} for them. 
+	 */
 	private Map<NodeId, Node> typeNodes = new HashMap<NodeId, Node>();
 	
 	/**
@@ -64,10 +69,13 @@ public class AnnotationNodeManager implements INodeManager {
 	 */
 	private NodeId myRootId;
 	
-	//rootnode will be generated out of this infos
-	private String browseName; //browsename of the rootnode for this nodemanager
-	private String displayName; //displayname of the rootnode for this nodemanager
-	private String description; //description of the rootnode for this nodemanager
+	/*
+	 * all nodes of this nodemanager are added under a single root node. how
+	 * this rootnode looks like is described by the following properties.
+	 */
+	private String browseName; //browsename of the rootnode
+	private String displayName; //displayname of the rootnode
+	private String description; //description of the rootnode
 	private NodeId referenceType;
 	
 	/**
@@ -196,6 +204,10 @@ public class AnnotationNodeManager implements INodeManager {
 		return idParts[1];
 	}
 	
+	/**
+	 * 1. builds the root node so the client has an access point for our nodes.
+	 * 2. creates typedefinition nodes for all {@link NodeMapping}s we have.
+	 */
 	@Override
 	public void init(AddressSpace addrSpace, int nsIndex) {
 		this.addrSpace = addrSpace;
@@ -218,8 +230,11 @@ public class AnnotationNodeManager implements INodeManager {
 				typeNodes.put(n.getNodeId(), n);
 			}
 			
-			//add the typenode to the correct parent type
 			try {
+				/*
+				 * typenodes are not only referenced by nodes using them as type (room -> hasTypeDefinition -> roomType)
+				 * but also have to be added as subtypes in the opc ua typesystem (baseobjecttype -> hasSubType -> roomType) - and this is done here.
+				 */
 				NodeUtils.addReferenceToNode(addrSpace.getNode(Identifiers.BaseObjectType), new ReferenceNode(Identifiers.HasSubtype, false, NodeUtils.toExpandedNodeId(typeNode.getNodeId())));
 			} catch (UAServerException e) {
 				LOG.error(e.getMessage(), e);
@@ -344,7 +359,12 @@ public class AnnotationNodeManager implements INodeManager {
 	}
 	
 	@Override
-	public List<ReferenceDescription> getReferences(NodeId nodeId) throws UAServerException {
+	public ReferenceNode[] getReferences(NodeId nodeId) throws UAServerException {
+		//TODO implement this
+		return null;
+	}
+			
+	public List<ReferenceDescription> getReferencesOld(NodeId nodeId) throws UAServerException {
 		List<ReferenceDescription> refDescs = null;
 		
 		/*
@@ -394,8 +414,20 @@ public class AnnotationNodeManager implements INodeManager {
 		String[] idParts = ((String)nodeId.getValue()).split(ID_SEPARATOR);
 		
 		if (((String)nodeId.getValue()).contains("Type")){
-			//TODO check if it is a type node of our nodemappings, if so --> return node from corenodemanager
-			return addrSpace.getCoreNodeManager().getReferences(nodeId);
+			//TODO check if it is a type node of our nodemappings
+			Node node = typeNodes.get(nodeId);
+			if (node != null && node.getReferences() != null){
+				for (ReferenceNode refNode: node.getReferences()){
+					//it could be that the targetNode is not from this nodemanager. therefore we get the targetNode through the addrSpace
+					Node targetNode = addrSpace.getNode(NodeUtils.toNodeId(refNode.getTargetId()));
+					if (targetNode != null){
+						//the target node does really exist. it can be in opc ua that only a reference exists, but the target node does not!
+						ReferenceDescription refDesc = NodeUtils.mapReferenceNodeToDesc(refNode, targetNode);
+						allReferences.add(refDesc);
+					}
+				}
+			}
+			return allReferences;
 		}
 		
 		

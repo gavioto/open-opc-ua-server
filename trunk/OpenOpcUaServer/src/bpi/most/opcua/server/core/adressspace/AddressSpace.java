@@ -10,13 +10,15 @@ import org.opcfoundation.ua.builtintypes.ExpandedNodeId;
 import org.opcfoundation.ua.builtintypes.NodeId;
 import org.opcfoundation.ua.core.Node;
 import org.opcfoundation.ua.core.ReferenceDescription;
+import org.opcfoundation.ua.core.ReferenceNode;
 
 import bpi.most.opcua.server.core.UAServerException;
 import bpi.most.opcua.server.core.util.NodeUtils;
-import bpi.most.opcua.server.core.util.Stopwatch;
 
 /**
- * manages the address space of the underlying system.
+ * manages the address space of the underlying system. the whole address space is the
+ * union of all used {@link INodeManager}s. the {@link AddressSpace} delegates request
+ * to the correct INodeManager or queries all of them.
  * 
  * @author harald
  *
@@ -62,22 +64,17 @@ public class AddressSpace {
 	}
 	
 	public List<ReferenceDescription> browseNode(NodeId nodeId){
-//		Stopwatch sw = new Stopwatch();
-//		sw.start();
-		
-		//check ns for nodeId
 		List<ReferenceDescription> refDescs = new ArrayList<ReferenceDescription>();
 		
 		//collect all references for this node
-		List<ReferenceDescription> temp = null;
+		ReferenceNode[] temp = null;
 		for (INodeManager nm: nodeMgrs.values()){
 			try{
 				temp = nm.getReferences(nodeId);
-				
 				//we do not trust INodeManager implementations here :)
 				if (temp != null){
-					LOG.debug("got " + temp.size() + " references from " + nm.getClass().getName());
-					refDescs.addAll(temp);
+					LOG.debug("got " + temp.length + " references from " + nm.getClass().getName());
+					refDescs.addAll(refToRefDesc(temp));
 				}
 			}catch(UAServerException e){
 				//here we catch the exception because we may be able to collect references from at least one nodemanager
@@ -85,10 +82,32 @@ public class AddressSpace {
 			}
 		}
 	
-//		sw.stop();
-//		LOG.debug("---> browsing took " + sw.getDuration() + "ms"); 
-		
 		return refDescs;
+	}
+	
+	/**
+	 * for all given {@link ReferenceNode} a {@link ReferenceDescription} is created which can
+	 * be returned in the browseRequest.
+	 * 
+	 * @param refList
+	 * @return
+	 * @throws UAServerException
+	 */
+	private List<ReferenceDescription> refToRefDesc(ReferenceNode[] refList) throws UAServerException{
+		List<ReferenceDescription> refDescList = new ArrayList<ReferenceDescription>();
+		
+		if (refList != null){
+			for (ReferenceNode refNode: refList){
+				Node targetNode = getNode(refNode.getTargetId());
+				if (targetNode != null){
+					//the target node does really exist. it can be in opc ua that only a reference exists, but the target node does not!
+					ReferenceDescription refDesc = NodeUtils.mapReferenceNodeToDesc(refNode, targetNode);
+					refDescList.add(refDesc);
+				}
+			}
+		}
+		
+		return refDescList;
 	}
 	
 	public void addNodeManager(int nsIndex, INodeManager partition){
