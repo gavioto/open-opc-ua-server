@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.opcfoundation.ua.builtintypes.ExpandedNodeId;
+import org.opcfoundation.ua.builtintypes.NodeId;
 import org.opcfoundation.ua.core.NodeClass;
 
 /**
@@ -40,6 +41,11 @@ public class NodeMapping {
 	 * points to this {@link ExpandedNodeId}.
 	 */
 	private ExpandedNodeId typeDefinition;
+	
+	/**
+	 * id of the parent type of this nodes type
+	 */
+	private NodeId parentType;
 	
 	/**
 	 * field which contains the variables value. this is only used for Variable-Nodes.
@@ -199,6 +205,20 @@ public class NodeMapping {
 	public void setTypeDefinition(ExpandedNodeId typeDefinition) {
 		this.typeDefinition = typeDefinition;
 	}
+	
+	/**
+	 * @return the parentType
+	 */
+	public NodeId getParentType() {
+		return parentType;
+	}
+
+	/**
+	 * @param parentType the parentType to set
+	 */
+	public void setParentType(NodeId parentType) {
+		this.parentType = parentType;
+	}
 
 	/**
 	 * reads the value of the field in the given obj
@@ -226,7 +246,7 @@ public class NodeMapping {
 	}
 	
 	public Object readValueField(Object obj) throws IllegalArgumentException, IllegalAccessException{
-		return readValue(valueField, obj).toString();
+		return readValue(valueField, obj);
 	}
 	
 	public Object readProperty(String name, Object obj) throws IllegalArgumentException, IllegalAccessException{

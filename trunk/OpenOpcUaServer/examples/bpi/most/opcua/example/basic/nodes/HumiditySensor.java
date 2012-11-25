@@ -33,7 +33,7 @@ public class HumiditySensor{
 	/**
 	 * 
 	 */
-	public HumiditySensor(double value) {
+	public HumiditySensor(Double value) {
 		this.value = value;
 	}
 	

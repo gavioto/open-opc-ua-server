@@ -1,6 +1,7 @@
 package bpi.most.opcua.server.annotation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -26,6 +27,7 @@ import bpi.most.opcua.server.core.UAServerException;
 import bpi.most.opcua.server.core.adressspace.AddressSpace;
 import bpi.most.opcua.server.core.adressspace.INodeManager;
 import bpi.most.opcua.server.core.adressspace.NodeFactory;
+import bpi.most.opcua.server.core.util.ArrayUtils;
 import bpi.most.opcua.server.core.util.NodeUtils;
 
 /**
@@ -360,46 +362,28 @@ public class AnnotationNodeManager implements INodeManager {
 	
 	@Override
 	public ReferenceNode[] getReferences(NodeId nodeId) throws UAServerException {
-		//TODO implement this
-		return null;
-	}
-			
-	public List<ReferenceDescription> getReferencesOld(NodeId nodeId) throws UAServerException {
-		List<ReferenceDescription> refDescs = null;
+		List<ReferenceNode> refs = null;
 		
 		/*
 		 * we only have references for our own index
 		 */
 		if (nodeId.getNamespaceIndex() == nsIndex){
 			if (myRootId.equals(nodeId)){
-				refDescs = getTopLevelReferences();
+				refs = getTopLevelReferences();
 			}else{
-				refDescs = getReferencesForNodeId(nodeId);
+				refs = getReferencesForNodeId(nodeId);
 			}
 		}
 		
-		return refDescs;
+		return ArrayUtils.toArray(refs, ReferenceNode.class);
 	}
 	
-	private List<ReferenceDescription> getTopLevelReferences(){
-		List<ReferenceDescription> topLevelRefs = new ArrayList<ReferenceDescription>();
+	private List<ReferenceNode> getTopLevelReferences(){
+		List<ReferenceNode> topLevelRefs = new ArrayList<ReferenceNode>();
 		
 		//add references we added ourselfs to the root
 		if (myRoot.getReferences() != null){
-			for (ReferenceNode refNode: myRoot.getReferences()){
-				//it could be that the targetNode is not from this nodemanager. therefore we get the targetNode through the addrSpace
-				Node targetNode;
-				try {
-					targetNode = addrSpace.getNode(NodeUtils.toNodeId(refNode.getTargetId()));
-					if (targetNode != null){
-						//the target node does really exist. it can be in opc ua that only a reference exists, but the target node does not!
-						ReferenceDescription refDesc = NodeUtils.mapReferenceNodeToDesc(refNode, targetNode);
-						topLevelRefs.add(refDesc);
-					}
-				} catch (UAServerException e) {
-					LOG.error(e.getMessage(), e);
-				}
-			}
+			topLevelRefs.addAll(Arrays.asList(myRoot.getReferences()));
 		}
 		
 		//add all references we get from the implementation
@@ -408,26 +392,16 @@ public class AnnotationNodeManager implements INodeManager {
 		return topLevelRefs;
 	}
 	
-	private List<ReferenceDescription> getReferencesForNodeId(NodeId nodeId) throws UAServerException{
+	private List<ReferenceNode> getReferencesForNodeId(NodeId nodeId) throws UAServerException{
 		LOG.info(nodeId.getValue());
-		List<ReferenceDescription> allReferences = new ArrayList<ReferenceDescription>();
+		List<ReferenceNode> refs = new ArrayList<ReferenceNode>();
 		String[] idParts = ((String)nodeId.getValue()).split(ID_SEPARATOR);
 		
-		if (((String)nodeId.getValue()).contains("Type")){
-			//TODO check if it is a type node of our nodemappings
+		if (typeNodes.containsKey(nodeId)){
+			//check if it is a type node of our nodemappings
 			Node node = typeNodes.get(nodeId);
-			if (node != null && node.getReferences() != null){
-				for (ReferenceNode refNode: node.getReferences()){
-					//it could be that the targetNode is not from this nodemanager. therefore we get the targetNode through the addrSpace
-					Node targetNode = addrSpace.getNode(NodeUtils.toNodeId(refNode.getTargetId()));
-					if (targetNode != null){
-						//the target node does really exist. it can be in opc ua that only a reference exists, but the target node does not!
-						ReferenceDescription refDesc = NodeUtils.mapReferenceNodeToDesc(refNode, targetNode);
-						allReferences.add(refDesc);
-					}
-				}
-			}
-			return allReferences;
+			refs.addAll(Arrays.asList(node.getReferences()));
+			return refs;
 		}
 		
 		
@@ -439,7 +413,7 @@ public class AnnotationNodeManager implements INodeManager {
 			//here we have references to children - of the given nodeId
 			List<?> children = annoNodeSource.getChildren(nodeMapping.getClazz(), beanId);
 			if (children != null){
-				allReferences.addAll(mapBeanListToRefDescList(children));
+				refs.addAll(mapBeanListToRefDescList(children));
 			}
 			
 			/*
@@ -450,32 +424,32 @@ public class AnnotationNodeManager implements INodeManager {
 			 *  @Variable
 			 *  ....
 			 */
-			allReferences.addAll(buildInBeanReferences(nodeName, beanId));
+			refs.addAll(buildInBeanReferences(nodeName, beanId));
 			
 			//create typedefinition for the node
 			ReferenceNode typeRefNode = new ReferenceNode(Identifiers.HasTypeDefinition, false, nodeMapping.getTypeDefinition());
-			ReferenceDescription typeRef = NodeUtils.mapReferenceNodeToDesc(typeRefNode, addrSpace.getNode(nodeMapping.getTypeDefinition()));
-			allReferences.add(typeRef);
+//			ReferenceDescription typeRef = NodeUtils.mapReferenceNodeToDesc(typeRefNode, addrSpace.getNode(nodeMapping.getTypeDefinition()));
+			refs.add(typeRefNode);
 		}else if (idParts.length == 3){
-			String propId = idParts[2];
-			ReferenceDescription typeRef;
+//			String propId = idParts[2];
+//			ReferenceDescription typeRef;
 			
 //			LOG.debug("______ reading value for property " + nodeId.getValue());
 			//we only want to fetch the references of another member-variable of the bean.
 			
 			//TODO, check if it is a property --> no references, except the typedefinition
 			ReferenceNode typeRefNode = new ReferenceNode(Identifiers.HasTypeDefinition, false, new ExpandedNodeId(Identifiers.PropertyType));
-			typeRef = NodeUtils.mapReferenceNodeToDesc(typeRefNode, addrSpace.getNode(Identifiers.PropertyType));
+//			typeRef = NodeUtils.mapReferenceNodeToDesc(typeRefNode, addrSpace.getNode(Identifiers.PropertyType));
 			
 			// if its an @Ref --> check the bean for its references
 			// do not forget typedefinition!
 			
-			allReferences.add(typeRef);
+			refs.add(typeRefNode);
 		}
 		
 		
 		
-		return allReferences;
+		return refs;
 	}
 	
 	/**
@@ -485,8 +459,8 @@ public class AnnotationNodeManager implements INodeManager {
 	 * @return
 	 * @throws UAServerException 
 	 */
-	private List<ReferenceDescription> buildInBeanReferences(String nodeName, String id) throws UAServerException{
-		List<ReferenceDescription> inBeanReferences = new ArrayList<ReferenceDescription>();
+	private List<ReferenceNode> buildInBeanReferences(String nodeName, String id) throws UAServerException{
+		List<ReferenceNode> inBeanReferences = new ArrayList<ReferenceNode>();
 		
 		/*
 		 * the nodemapping contains all information to 
@@ -498,48 +472,46 @@ public class AnnotationNodeManager implements INodeManager {
 		 * the obj we extract properties and so on from.
 		 */
 		Object obj = annoNodeSource.getObjectById(nodeMapping.getClazz(), id);
-		
-		//TODO create reference description for all kind of in-bean references
-		//maybe we can also map collections to refDescs and hence delete the getChildren method
-		for (ReferenceMapping refMapping: nodeMapping.getReferencesByName().values()){
-			try {
-				String fieldName = refMapping.getFieldName();
-				String fieldId = nodeMapping.getNodeName() + ID_SEPARATOR + id + ID_SEPARATOR + fieldName;
-				
-				//TODO support explicit displayname in annotation
-				String displayName = fieldName;
-				
-				//build the reference description
-				Node referencedNode = NodeFactory.getNodeInstance(fieldId, refMapping.getDescription(), displayName, locale, refMapping.getNodeClass(), new NodeId(nsIndex, fieldId));
-				
-				//TODO add typedefinition reference. take the one from the nodeMApping
-				NodeUtils.addReferenceToNode(referencedNode, new ReferenceNode(Identifiers.HasTypeDefinition, false, new ExpandedNodeId(Identifiers.PropertyType)));
-				
-				ReferenceDescription refDesc = NodeUtils.getRefDescForNode(referencedNode, refMapping.getReferenceType(), true);
-				inBeanReferences.add(refDesc);
-			} catch (Exception e) {
-				LOG.error(e.getMessage(), e);
+		//only if obj really exists, we build referenced for it. notice we do not need actual values from it
+		if (obj != null){
+			for (ReferenceMapping refMapping: nodeMapping.getReferencesByName().values()){
+				try {
+					String fieldName = refMapping.getFieldName();
+					String fieldId = nodeMapping.getNodeName() + ID_SEPARATOR + id + ID_SEPARATOR + fieldName;
+					NodeId nodeId = new NodeId(nsIndex, fieldId);
+//					String displayName = fieldName;
+	/*				
+					//build the reference description
+					Node referencedNode = NodeFactory.getNodeInstance(fieldId, refMapping.getDescription(), displayName, locale, refMapping.getNodeClass(), new NodeId(nsIndex, fieldId));
+					
+					//TODO add typedefinition reference. take the one from the nodeMApping
+					NodeUtils.addReferenceToNode(referencedNode, new ReferenceNode(Identifiers.HasTypeDefinition, false, new ExpandedNodeId(Identifiers.PropertyType)));
+	*/
+					ReferenceNode ref = new ReferenceNode(refMapping.getReferenceType(), false, NodeUtils.toExpandedNodeId(nodeId));
+					inBeanReferences.add(ref);
+				} catch (Exception e) {
+					LOG.error(e.getMessage(), e);
+				}
 			}
 		}
+		
+		
 		
 		return inBeanReferences;
 	}
 	
-	private List<ReferenceDescription> mapBeanListToRefDescList(List<?> objectsToIntrospect){
-		List<ReferenceDescription> refDescList = new ArrayList<ReferenceDescription>();
+	private List<ReferenceNode> mapBeanListToRefDescList(List<?> objectsToIntrospect){
+		List<ReferenceNode> refDescList = new ArrayList<ReferenceNode>();
 		for (Object obj: objectsToIntrospect){
 			refDescList.add(mapBeanToRefDesc(obj));
 		}
 		return refDescList;
 	}
 	
-	private ReferenceDescription mapBeanToRefDesc(Object obj){
-		ReferenceDescription refDesc = new ReferenceDescription();
-		
+	private ReferenceNode mapBeanToRefDesc(Object obj){
 		Node objAsNode = buildNode(obj);
-		refDesc = NodeUtils.getRefDescForNode(objAsNode, Identifiers.HasComponent, true);
-		
-		return refDesc;
+		ReferenceNode ref = new ReferenceNode(Identifiers.HasComponent, false, NodeUtils.toExpandedNodeId(objAsNode.getNodeId()));
+		return ref;
 	}
 	
 	@Override

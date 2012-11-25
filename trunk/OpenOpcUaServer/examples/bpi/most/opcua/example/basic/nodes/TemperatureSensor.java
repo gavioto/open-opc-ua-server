@@ -30,7 +30,7 @@ public class TemperatureSensor{
 	/**
 	 * 
 	 */
-	public TemperatureSensor(double value) {
+	public TemperatureSensor(Double value) {
 		this.value = value;
 	}
 

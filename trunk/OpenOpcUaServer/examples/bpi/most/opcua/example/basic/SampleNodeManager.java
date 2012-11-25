@@ -46,7 +46,7 @@ public class SampleNodeManager implements IAnnotatedNodeSource{
 		f0.setRooms(Arrays.asList(new Room[]{r01, r02, r03}));
 		
 		//rooms for floor 1
-		Room r11 = new Room(11, "room 11", "middle room", 31.34, 2, new HumiditySensor(0.319), new TemperatureSensor(22.1));
+		Room r11 = new Room(11, "room 11", "middle room", 31.34, 2, new HumiditySensor(null), new TemperatureSensor(22.1));
 		Room r12 = new Room(12, "room 12", "small room", 18, 2, new HumiditySensor(0.324), new TemperatureSensor(21.9));
 		f1.setRooms(Arrays.asList(new Room[]{r11, r12}));
 		
@@ -97,7 +97,7 @@ public class SampleNodeManager implements IAnnotatedNodeSource{
 	public List<?> getChildren(Class<?> parentClazz, String parentId) {
 		List<?> result = null;
 		if (Floor.class.equals(parentClazz)){
-	//		result = allFloors.get(Integer.parseInt(parentId)).getRooms();
+			result = allFloors.get(Integer.parseInt(parentId)).getRooms();
 		}
 		return result;
 	}

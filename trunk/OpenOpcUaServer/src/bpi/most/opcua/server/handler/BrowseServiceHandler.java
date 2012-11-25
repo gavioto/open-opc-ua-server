@@ -14,6 +14,7 @@ import org.opcfoundation.ua.core.AddReferencesResponse;
 import org.opcfoundation.ua.core.BrowseDescription;
 import org.opcfoundation.ua.core.BrowseNextRequest;
 import org.opcfoundation.ua.core.BrowseNextResponse;
+import org.opcfoundation.ua.core.BrowsePath;
 import org.opcfoundation.ua.core.BrowseRequest;
 import org.opcfoundation.ua.core.BrowseResponse;
 import org.opcfoundation.ua.core.BrowseResult;
@@ -22,7 +23,6 @@ import org.opcfoundation.ua.core.DeleteNodesRequest;
 import org.opcfoundation.ua.core.DeleteNodesResponse;
 import org.opcfoundation.ua.core.DeleteReferencesRequest;
 import org.opcfoundation.ua.core.DeleteReferencesResponse;
-import org.opcfoundation.ua.core.NodeClass;
 import org.opcfoundation.ua.core.NodeManagementServiceSetHandler;
 import org.opcfoundation.ua.core.QueryFirstRequest;
 import org.opcfoundation.ua.core.QueryFirstResponse;
@@ -31,13 +31,14 @@ import org.opcfoundation.ua.core.QueryNextResponse;
 import org.opcfoundation.ua.core.ReferenceDescription;
 import org.opcfoundation.ua.core.RegisterNodesRequest;
 import org.opcfoundation.ua.core.RegisterNodesResponse;
+import org.opcfoundation.ua.core.RelativePathElement;
+import org.opcfoundation.ua.core.StatusCodes;
 import org.opcfoundation.ua.core.TranslateBrowsePathsToNodeIdsRequest;
 import org.opcfoundation.ua.core.TranslateBrowsePathsToNodeIdsResponse;
 import org.opcfoundation.ua.core.UnregisterNodesRequest;
 import org.opcfoundation.ua.core.UnregisterNodesResponse;
 import org.opcfoundation.ua.transport.EndpointServiceRequest;
 
-import bpi.most.opcua.server.core.util.Stopwatch;
 import bpi.most.opcua.server.handler.referencefilter.IReferenceFilter;
 import bpi.most.opcua.server.handler.referencefilter.RefDirectionFilter;
 import bpi.most.opcua.server.handler.referencefilter.RefTypeFilter;
@@ -45,8 +46,6 @@ import bpi.most.opcua.server.handler.referencefilter.TargetNodeTypeFilter;
 
 public class BrowseServiceHandler extends ServiceHandlerBase implements NodeManagementServiceSetHandler{
 
-	private static long lastResponse = System.currentTimeMillis();
-	
 	private static final Logger LOG = Logger
 			.getLogger(BrowseServiceHandler.class);
 	
@@ -86,24 +85,16 @@ public class BrowseServiceHandler extends ServiceHandlerBase implements NodeMana
 	public void onBrowse(
 			EndpointServiceRequest<BrowseRequest, BrowseResponse> serviceReq)
 			throws ServiceFaultException {
-//		LOG.info("==> last browse-response sent " + (System.currentTimeMillis() - lastResponse) + "ms ago");
-		
-		Stopwatch sw = new Stopwatch();
-		sw.start();
-		
 		BrowseRequest req = serviceReq.getRequest();
 		BrowseResponse resp = new BrowseResponse();
 		
 		resp.setResponseHeader(buildRespHeader(req));
 		
-		//handle the request
-	//	LOG.info("viewdescription: " + req.getView());
-		
 		//max references per node to return; 0 -> no limitation.
 		//TODO consider this value. therefore continuation points have to be supported!! therefore we have to store the point in our sessioin --> session mgmt has to work better
 		int maxReferences = req.getRequestedMaxReferencesPerNode().intValue();
 		
-		LOG.info("clients sends browserequest for " + req.getNodesToBrowse().length + " nodes");
+//		LOG.info("clients sends browserequest for " + req.getNodesToBrowse().length + " nodes");
 		List<BrowseResult> browseResults = new ArrayList<BrowseResult>();
 		for (BrowseDescription browseDesc: req.getNodesToBrowse()){
 			LOG.info("got browse request for nodeID " + browseDesc.getNodeId());
@@ -113,10 +104,6 @@ public class BrowseServiceHandler extends ServiceHandlerBase implements NodeMana
 		resp.setResults(browseResults.toArray(new BrowseResult[browseResults.size()]));
 		
 		sendResp(serviceReq, resp);
-		
-		sw.stop();
-//		LOG.info("---> browseRequest took " + sw.getDuration() + "ms");
-		lastResponse = System.currentTimeMillis();
 	}
 	
 	/**
@@ -150,7 +137,6 @@ public class BrowseServiceHandler extends ServiceHandlerBase implements NodeMana
 		
 		//filter fields of the remaining referenceDescriptions to match the clients request. he may want just a view fields set
 		EnumSet<BrowseResultMask> resMask = BrowseResultMask.getSet(browseDesc.getResultMask());
-//		LOG.debug("resultmask for browserequest: " + resMask.toString());
 		List<ReferenceDescription> resultingDescriptions = new ArrayList<ReferenceDescription>();
 		for (ReferenceDescription refDesc: filteredReferences){
 			resultingDescriptions.add(filterRefDescFields(refDesc, resMask));
@@ -216,9 +202,22 @@ public class BrowseServiceHandler extends ServiceHandlerBase implements NodeMana
 
 	@Override
 	public void onTranslateBrowsePathsToNodeIds(
-			EndpointServiceRequest<TranslateBrowsePathsToNodeIdsRequest, TranslateBrowsePathsToNodeIdsResponse> paramEndpointServiceRequest)
+			EndpointServiceRequest<TranslateBrowsePathsToNodeIdsRequest, TranslateBrowsePathsToNodeIdsResponse> serviceReq)
 			throws ServiceFaultException {
-		// TODO Auto-generated method stub
+		
+		TranslateBrowsePathsToNodeIdsRequest req = serviceReq.getRequest();
+		TranslateBrowsePathsToNodeIdsResponse resp = new TranslateBrowsePathsToNodeIdsResponse();
+		
+		LOG.debug("====>> translate browse paths request");
+		for (BrowsePath path: req.getBrowsePaths()){
+			for (RelativePathElement pathElement: path.getRelativePath().getElements()){
+				LOG.debug(pathElement.getIncludeSubtypes() + ", " + pathElement.getReferenceTypeId() + ", " + pathElement.getTargetName().getName());
+			}
+		}
+		
+		//TODO implement this service. this is only relevant for clients who programm against type definitions.
+		resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_QueryTooComplex));
+		sendResp(serviceReq, resp);
 	}
 
 	@Override

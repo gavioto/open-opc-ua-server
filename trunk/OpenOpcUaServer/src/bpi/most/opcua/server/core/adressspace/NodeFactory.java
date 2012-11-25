@@ -103,6 +103,10 @@ public class NodeFactory {
 		return node;
 	}
 	
+	public static VariableTypeNode getVariableTypeNodeInstance(String browseName, String description, String displayName, Locale locale, NodeId nodeId, boolean isAbstract){
+		return NodeFactory.getVariableTypeNodeInstance(browseName, description, displayName, locale, nodeId, null, null, null, null, isAbstract);
+	}
+	
 	public static ObjectNode getObjectNodeInstance(String browseName, String description, String displayName, Locale locale, NodeId nodeId, UnsignedByte eventNotifier){
 		ObjectNode node = new ObjectNode();
 		

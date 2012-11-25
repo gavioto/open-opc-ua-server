@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.opcfoundation.ua.builtintypes.NodeId;
 import org.opcfoundation.ua.core.Identifiers;
 import org.opcfoundation.ua.core.NodeClass;
 import org.opcfoundation.ua.core.VariableNode;
@@ -72,6 +71,7 @@ public class UaNodeAnnoIntrospector {
 			//TODO do some validation and throw exception if for example displayname is missing 
 			NodeMapping nodeMap = new NodeMapping(obj.getClass(), objAnno.nodeClass(), idField, displNameField, descField, referencesByName);
 			nodeMap.setTypeDefinition(NodeUtils.toExpandedNodeId(NodeUtils.getBaseTypeNodeId(objAnno.nodeClass())));
+			nodeMap.setParentType(NodeUtils.getBaseTypeNodeId(objAnno.nodeClass()));
 			nodeMap.setValueField(valueField);
 			return nodeMap;
 		}else{
@@ -98,11 +98,16 @@ public class UaNodeAnnoIntrospector {
 		refMapping.setField(field);
 		refMapping.setDisplayName(field.getName());
 		refMapping.setBrowseName(field.getName());
+		
+		refMapping.setTypeDefinition(Identifiers.BaseObjectType);
+		
 		//TODO find out actual node class
 		refMapping.setNodeClass(NodeClass.Variable);
 		refMapping.setReferenceType(refAnno.refType().nodeId());
 		return refMapping;
 	}
+	
+	
 	
 	/**
 	 * tries to introspect the given Object. if it is correctly annotated,
@@ -125,7 +130,7 @@ public class UaNodeAnnoIntrospector {
 	/**
 	 * 
 	 * sets the fields DataType, ValueRank and ArrayDimension in the given {@link VariableNode}
-	 * so that they represent the given {@link Field}s datatype.
+	 * so that they represent the given {@link Field}s type.
 	 * 
 	 * @param variable
 	 * @param f

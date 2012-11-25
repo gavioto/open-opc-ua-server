@@ -63,8 +63,13 @@ public class TypeNodeBuilder {
 		String typeName = nodeMapping.getNodeName() + TYPE_SUFFIX;
 		NodeId typeId = new NodeId(nsIndex, typeName);
 		
-		//lets create hardcoded object types
-		ObjectTypeNode typeNode = NodeFactory.getObjectTypeNodeInstance(typeName, null, typeName, locale, typeId, false);
+		Node typeNode = null;
+		
+		if (NodeClass.Object.equals(nodeMapping.getNodeClass())){
+			typeNode = NodeFactory.getObjectTypeNodeInstance(typeName, null, typeName, locale, typeId, false);
+		}else if (NodeClass.Variable.equals(nodeMapping.getNodeClass())){
+			typeNode = NodeFactory.getVariableTypeNodeInstance(typeName, null, typeName, locale, typeId, false);
+		}
 		
 		createdNodes.add(typeNode);
 		
@@ -84,7 +89,7 @@ public class TypeNodeBuilder {
 		
 		try {
 			//add reference to the parent type
-			Node parentType = addrSpace.getNode(Identifiers.BaseObjectType);
+			Node parentType = addrSpace.getNode(nodeMapping.getParentType());
 			NodeUtils.addReferenceToNode(parentType, new ReferenceNode(Identifiers.HasSubtype, false, new ExpandedNodeId(typeNode.getNodeId())));
 		} catch (UAServerException e) {
 			LOG.error(e.getMessage(), e);

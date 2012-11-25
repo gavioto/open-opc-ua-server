@@ -19,7 +19,9 @@ import org.opcfoundation.ua.transport.security.PrivKey;
 import org.opcfoundation.ua.transport.security.SecurityMode;
 
 import bpi.most.opcua.example.basic.nodes.Floor;
+import bpi.most.opcua.example.basic.nodes.HumiditySensor;
 import bpi.most.opcua.example.basic.nodes.Room;
+import bpi.most.opcua.example.basic.nodes.TemperatureSensor;
 import bpi.most.opcua.server.annotation.AnnotationNodeManager;
 import bpi.most.opcua.server.annotation.IAnnotatedNodeSource;
 import bpi.most.opcua.server.core.UAServer;
@@ -75,7 +77,9 @@ public class SampleServer {
 		AnnotationNodeManager annoNMgr = new AnnotationNodeManager(new SampleNodeManager(), "my building", "contains some sample nodes of a building", "sampleBuilding");
 		//add nodes to get introspected at startup -> this is a good practice
 		annoNMgr.addObjectToIntrospect(new Floor());
-		// TODO add rooms again		annoNMgr.addObjectToIntrospect(new Room());
+		annoNMgr.addObjectToIntrospect(new Room());
+		annoNMgr.addObjectToIntrospect(new HumiditySensor());
+		annoNMgr.addObjectToIntrospect(new TemperatureSensor());
 		s.addNodeManager(annoNMgr);
 		
 		//start the server so that it is ready to serve requests.
