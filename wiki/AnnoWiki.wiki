@@ -53,18 +53,14 @@ Custom ID generators could be supported sometime in the future.
 
 == Parent-Child relationships ==
 
-Also known as one-to-many relationships are not describable by annotations at the moment, issue 4 will tackle this problem. For know this kind of relationship is realized by implementing the `IAnnotationNodeSource#getChildren(String parentClassName, String parentId)` method. This method should return all children for a parent node of the given `parentClassName` and `parentId`. The class name again is without packages, hence an example call for this method could be with the arguments `("Floor", "3")`.
+Also known as one-to-many relationships are not describable by annotations at the moment, issue 4 will tackle this problem. For know this kind of relationship is realized by implementing the `IAnnotationNodeSource#getChildren(Class<?> parentClazz, String parentId)` method. This method should return all children for a parent node of the given `parent Class` and `parentId`.
 
 The implementor of this method has to distinguish classes and return the children for the correct id. For example returning all `Room`s for a given `Floor`
 {{{
-...
-private final String FLOOR_NODE = Floor.class.getSimpleName();
-...
-
 @Override
-public List<?> getChildren(String parentClassName, String parentId) {
+public List<?> getChildren(Class<?> parentClazz, String parentId) {
    List<?> result = null;
-   if (FLOOR_NODE.equals(parentClassName)){
+   if (Floor.class.equals(parentClazz)){
       result = allFloors.get(Integer.parseInt(parentId)).getRooms();
    }
    return result;
