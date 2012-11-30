@@ -1,22 +1,16 @@
 package bpi.most.opcua.example.basic;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.cert.CertificateException;
-import java.security.spec.InvalidKeySpecException;
 
-import org.bouncycastle.openssl.PEMReader;
-import org.bouncycastle.openssl.PasswordFinder;
 import org.opcfoundation.ua.common.ServiceResultException;
 import org.opcfoundation.ua.core.ApplicationDescription;
 import org.opcfoundation.ua.transport.Endpoint;
-import org.opcfoundation.ua.transport.security.Cert;
 import org.opcfoundation.ua.transport.security.KeyPair;
-import org.opcfoundation.ua.transport.security.PrivKey;
 import org.opcfoundation.ua.transport.security.SecurityMode;
+import org.opcfoundation.ua.utils.CertificateUtils;
 
 import bpi.most.opcua.example.basic.nodes.Floor;
 import bpi.most.opcua.example.basic.nodes.HumiditySensor;
@@ -26,7 +20,6 @@ import bpi.most.opcua.server.annotation.AnnotationNodeManager;
 import bpi.most.opcua.server.annotation.IAnnotatedNodeSource;
 import bpi.most.opcua.server.core.UAServer;
 import bpi.most.opcua.server.core.adressspace.INodeManager;
-import bpi.most.opcua.server.core.util.FileUtils;
 
 /**
  * A simple OPC UA Server. It binds itself to an TCP port and uses annotations
@@ -110,7 +103,7 @@ public class SampleServer {
 	 */
 	private static KeyPair getApplicationInstanceCertificate()
 			throws ServiceResultException, IOException, CertificateException {
-		
+/*		
 		KeyPair kp = null;
 		
 		File certFile = FileUtils.getFileFromResource("/pki/server.pem");
@@ -138,8 +131,7 @@ public class SampleServer {
 			e.printStackTrace();
 		}
 		kp = new KeyPair(cert, key);
-		
-/*		
+*/		
 		KeyPair kp = null;
 		try {
 			//create one on the fly
@@ -147,7 +139,6 @@ public class SampleServer {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-*/		
 		return kp;
 	}
 }
