@@ -228,9 +228,9 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 
 		LOG.info("client nonce is: " + req.getClientNonce());
 		
-		SessionManager sessionMgr = getSessionManager();
+		SessionManager<?> sessionMgr = getSessionManager();
 		
-		Session session = sessionMgr.createSession();
+		Session<?> session = sessionMgr.createSession();
 		session.setClientDescription(req.getClientDescription());
 		
 		//make this visible in the adressspace
@@ -253,7 +253,7 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		session.setAuthenticationToken(authToken);
 		
 		server.getSessionManager().addSession(session);
-		LOG.debug("created session for client: " + session);
+///		LOG.debug("created session for client: " + session);
 		
 		resp.setSessionId(sessionID);
 		resp.setAuthenticationToken(authToken);

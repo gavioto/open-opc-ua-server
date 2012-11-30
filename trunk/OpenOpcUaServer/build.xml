@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 
-<project default="clean-build" basedir=".">
+<project name="open-opc-ua-server" default="clean-build" basedir=".">
     
     <property name="project.name" value="OpenOpcUaServer" />
-	<property name="version" value="0.8" />
-	<property name="build" value="2" />
+	<property name="version" value="0.9" />
+	<property name="build" value="4" />
 	<property name="src.dir" value="src" />
 	<property name="examples.dir" value="examples" />
 	<property name="test.dir" value="test" />
@@ -13,6 +13,17 @@
 	<property name="legal.dir" value="legal" />
 	<property name="build.dir" value="build" />
 	<property name="classes.dir" value="tmp" />
+	
+	<!-- names of the releases -->
+	<property name="release.binary" value="${build.dir}/${project.name}-${version}.${build}.jar" />
+	<property name="release.src" value="${build.dir}/${project.name}-${version}.${build}-src.zip" />
+	<property name="release.redist" value="${build.dir}/${project.name} ${version} Redistributables [${build}].zip" />
+	
+	<!-- used for upload to google code, available at http://code.google.com/p/ant-googlecode/ -->
+	<property name="gc.upload.jar" value="release-mgmt/ant-googlecode-0.0.3.jar" />
+	<!-- load google code credentials for release task (automatically upload the release to google code)
+		THIS FILE WILL NOT BE COMMITED. -->
+	<property file="gc.credentials.properties" />
 	
 	<target name="clean">
 		<delete dir="${build.dir}" quiet="true" />
@@ -38,7 +49,7 @@
 	<target name="build" depends="compile">
 		<mkdir dir="${build.dir}" />
 	
-		<jar destfile="${build.dir}/${project.name}-${version}.${build}.jar" basedir="${classes.dir}">
+		<jar destfile="${release.binary}" basedir="${classes.dir}">
 		    <!-- include resources -->
 			<fileset dir="${res.dir}" includes="**/*" />
 			
@@ -52,14 +63,14 @@
 		</jar>
 		
 		<!-- build zip with source files -->
-		<zip destfile="${build.dir}/${project.name}-${version}.${build}-src.zip" basedir="${src.dir}">
+		<zip destfile="${release.src}" basedir="${src.dir}">
 		    <fileset dir="${res.dir}" includes="**/*" />
 		    <fileset dir="${test.dir}" includes="**/*" />
 		    <fileset dir="${examples.dir}" includes="**/*" />
 		</zip>	
 		
 		<!-- includes dependency libs -->
-		<zip destfile="${build.dir}/${project.name} ${version} Redistributables [${build}].zip">
+		<zip destfile="${release.redist}">
 			<fileset dir="${build.dir}" includes="${project.name}-${version}.${build}.jar" />
 			<fileset dir="${lib.dir}" includes="**/*" />
 			<fileset dir="." includes="${legal.dir}/*" />
@@ -68,5 +79,37 @@
 		<delete dir="${classes.dir}" quiet="true" />
 	</target>
 
-	<target name="clean-build" depends="clean,build" />
+	<target name="release" depends="build">
+	    <taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="${gc.upload.jar}" name="gcupload"/>
+	    <fail unless="gc.username" message="Missing property 'gc.username'."/>
+	    <fail unless="gc.password" message="Missing property 'gc.password'."/>
+	    <gcupload
+            username="${gc.username}"
+            password="${gc.password}"
+         	projectname="${ant.project.name}"
+            filename="${release.binary}"
+      		targetfilename="${release.binary}"
+            summary="Open OPC UA Server v${version}.${build} binary"
+            labels="Featured, OpSys-All" />
+	    
+	    <gcupload
+            username="${gc.username}"
+            password="${gc.password}"
+         	projectname="${ant.project.name}"
+            filename="${release.src}"
+      		targetfilename="${release.src}"
+            summary="Open OPC UA Server v${version}.${build} source, tests and examples"
+            labels="Featured, OpSys-All" />
+	    
+	    <gcupload
+            username="${gc.username}"
+            password="${gc.password}"
+         	projectname="${ant.project.name}"
+            filename="${release.redist}"
+      		targetfilename="${release.redist}"
+            summary="Open OPC UA Server v${version}.${build} binary with dependent libraries"
+            labels="Featured, OpSys-All" />
+	</target> 
+	
+	<target name="clean-build" depends="clean,build,release" />
 </project>

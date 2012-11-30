@@ -1,6 +1,9 @@
 package bpi.most.opcua.server.handler;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,16 +11,25 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.opcfoundation.ua.builtintypes.DataValue;
 import org.opcfoundation.ua.builtintypes.DateTime;
+import org.opcfoundation.ua.builtintypes.ExtensionObject;
 import org.opcfoundation.ua.builtintypes.NodeId;
 import org.opcfoundation.ua.builtintypes.StatusCode;
 import org.opcfoundation.ua.builtintypes.UnsignedInteger;
+import org.opcfoundation.ua.builtintypes.Variant;
 import org.opcfoundation.ua.common.ServiceFaultException;
 import org.opcfoundation.ua.core.AttributeServiceSetHandler;
+import org.opcfoundation.ua.core.HistoryData;
 import org.opcfoundation.ua.core.HistoryReadRequest;
 import org.opcfoundation.ua.core.HistoryReadResponse;
+import org.opcfoundation.ua.core.HistoryReadResult;
+import org.opcfoundation.ua.core.HistoryReadValueId;
 import org.opcfoundation.ua.core.HistoryUpdateRequest;
 import org.opcfoundation.ua.core.HistoryUpdateResponse;
 import org.opcfoundation.ua.core.Node;
+import org.opcfoundation.ua.core.ReadAtTimeDetails;
+import org.opcfoundation.ua.core.ReadEventDetails;
+import org.opcfoundation.ua.core.ReadProcessedDetails;
+import org.opcfoundation.ua.core.ReadRawModifiedDetails;
 import org.opcfoundation.ua.core.ReadRequest;
 import org.opcfoundation.ua.core.ReadResponse;
 import org.opcfoundation.ua.core.ReadValueId;
@@ -26,23 +38,75 @@ import org.opcfoundation.ua.core.WriteResponse;
 import org.opcfoundation.ua.transport.EndpointServiceRequest;
 
 import bpi.most.opcua.server.core.UAServerException;
-import bpi.most.opcua.server.core.util.Stopwatch;
+import bpi.most.opcua.server.core.util.ArrayUtils;
 
 public class AttributeServiceHandler extends ServiceHandlerBase implements AttributeServiceSetHandler {
 
-	private static long lastResponse = System.currentTimeMillis();
-	
 	private static final Logger LOG = Logger
 	.getLogger(AttributeServiceHandler.class);
 	
+	
+	/**
+	 * history read only for variables and properties -> historydatanodes
+	 * 
+	 */
 	@Override
 	public void onHistoryRead(
 			EndpointServiceRequest<HistoryReadRequest, HistoryReadResponse> serviceReq)
 			throws ServiceFaultException {
 		HistoryReadRequest req = serviceReq.getRequest();
 		HistoryReadResponse resp = new HistoryReadResponse();
+		LOG.info("---------------  got history read request: ");
 		
-		LOG.info("---------------  got history read request: " + req);
+		for (HistoryReadValueId id: req.getNodesToRead()){
+			LOG.debug("nodeid: " + id.getNodeId());
+		}
+		
+		try {
+			Object historyDetails = req.getHistoryReadDetails().decode();
+			if (historyDetails instanceof ReadEventDetails){
+				
+			}else if (historyDetails instanceof ReadAtTimeDetails){
+				
+			}else if (historyDetails instanceof ReadProcessedDetails){
+				
+			}else if (historyDetails instanceof ReadRawModifiedDetails){
+				ReadRawModifiedDetails rawModifiedDetails = (ReadRawModifiedDetails) historyDetails;
+				LOG.debug(rawModifiedDetails);
+				Date start = new Date(rawModifiedDetails.getStartTime().getTimeInMillis());
+				Date end = new Date(rawModifiedDetails.getEndTime().getTimeInMillis());
+				SimpleDateFormat dFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				LOG.debug("start: " + dFormat.format(start));
+				LOG.debug("end: " + dFormat.format(end));
+				
+				HistoryReadResult historyResult = new HistoryReadResult();
+				HistoryData data = new HistoryData();
+				List<DataValue> values = new ArrayList<DataValue>();
+				
+				//lets mock some data
+				Double[] mockData = new Double[]{1.12, 1.23, 1.55, 1.22, 1.65, 2.75, 2.03, 2.23, 2.11, 1.77, 1.23, 1.66};
+				long diff = end.getTime() - start.getTime();
+				for (int i = 0; i< mockData.length; i++){
+					//create timestamps so that the datavalues are equally distributed over the requested time range
+					Calendar cal = Calendar.getInstance();
+					cal.setTimeInMillis(diff * i + start.getTime());
+					DateTime dateTime = new DateTime(cal);
+					values.add(new DataValue(new Variant(mockData[i]), StatusCode.GOOD, dateTime, dateTime));
+				}
+				
+				data.setDataValues(ArrayUtils.toArray(values, DataValue.class));
+				historyResult.setHistoryData(ExtensionObject.binaryEncode(data));
+				
+				resp.setResults(new HistoryReadResult[]{historyResult});
+			}
+			LOG.info(historyDetails.getClass().getName());
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+		}
+		
+		
+		resp.setResponseHeader(buildRespHeader(req));
+		serviceReq.sendResponse(resp);
 	}
 
 	@Override
@@ -56,10 +120,6 @@ public class AttributeServiceHandler extends ServiceHandlerBase implements Attri
 	@Override
 	public void onRead(EndpointServiceRequest<ReadRequest, ReadResponse> serviceReq)
 			throws ServiceFaultException {
-		LOG.info("==> last read-response sent " + (System.currentTimeMillis() - lastResponse) + "ms ago");
-		Stopwatch sw = new Stopwatch();
-		sw.start();
-		
 		ReadRequest req = serviceReq.getRequest();
 		ReadResponse resp = new ReadResponse();
 		
@@ -75,7 +135,7 @@ public class AttributeServiceHandler extends ServiceHandlerBase implements Attri
 		
 		//read all nodes the client wants
 		for (ReadValueId readId: req.getNodesToRead()){
-			LOG.info("client sent read request. nodeid: " + readId.getNodeId() + "; attrId:" + readId.getAttributeId());
+			LOG.debug("client sent read request. nodeid: " + readId.getNodeId() + "; attrId:" + readId.getAttributeId());
 			//check temp map
 			Node nodeToRead = readNodes.get(readId.getNodeId());
 			if (nodeToRead == null){
@@ -103,10 +163,6 @@ public class AttributeServiceHandler extends ServiceHandlerBase implements Attri
 		resp.setResponseHeader(buildRespHeader(req));
 		resp.setResults(dataValues.toArray(new DataValue[dataValues.size()]));
 		serviceReq.sendResponse(resp);
-		
-		sw.stop();
-		LOG.info("---> readRequest took " + sw.getDuration() + "ms");
-		lastResponse = System.currentTimeMillis();
 	}
 	
 	/**
