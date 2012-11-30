@@ -1,0 +1,9 @@
+#labels Featured
+#History of the releases
+= Change Log =
+
+== 2012-11-30: Version 0.9.4 ==
+
+Included the OPC Foundations Java Stack in the Redistributable download and lib folder.
+
+Started implementing History Read Service
