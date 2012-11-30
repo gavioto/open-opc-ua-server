@@ -33,11 +33,14 @@ import org.opcfoundation.ua.core.ReadRawModifiedDetails;
 import org.opcfoundation.ua.core.ReadRequest;
 import org.opcfoundation.ua.core.ReadResponse;
 import org.opcfoundation.ua.core.ReadValueId;
+import org.opcfoundation.ua.core.StatusCodes;
 import org.opcfoundation.ua.core.WriteRequest;
 import org.opcfoundation.ua.core.WriteResponse;
 import org.opcfoundation.ua.transport.EndpointServiceRequest;
 
 import bpi.most.opcua.server.core.UAServerException;
+import bpi.most.opcua.server.core.adressspace.INodeManager;
+import bpi.most.opcua.server.core.history.IHistoryManager;
 import bpi.most.opcua.server.core.util.ArrayUtils;
 
 public class AttributeServiceHandler extends ServiceHandlerBase implements AttributeServiceSetHandler {
@@ -58,10 +61,7 @@ public class AttributeServiceHandler extends ServiceHandlerBase implements Attri
 		HistoryReadResponse resp = new HistoryReadResponse();
 		LOG.info("---------------  got history read request: ");
 		
-		for (HistoryReadValueId id: req.getNodesToRead()){
-			LOG.debug("nodeid: " + id.getNodeId());
-		}
-		
+		List<HistoryReadResult> resultList = new ArrayList<HistoryReadResult>();
 		try {
 			Object historyDetails = req.getHistoryReadDetails().decode();
 			if (historyDetails instanceof ReadEventDetails){
@@ -72,39 +72,30 @@ public class AttributeServiceHandler extends ServiceHandlerBase implements Attri
 				
 			}else if (historyDetails instanceof ReadRawModifiedDetails){
 				ReadRawModifiedDetails rawModifiedDetails = (ReadRawModifiedDetails) historyDetails;
-				LOG.debug(rawModifiedDetails);
-				Date start = new Date(rawModifiedDetails.getStartTime().getTimeInMillis());
-				Date end = new Date(rawModifiedDetails.getEndTime().getTimeInMillis());
-				SimpleDateFormat dFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				LOG.debug("start: " + dFormat.format(start));
-				LOG.debug("end: " + dFormat.format(end));
 				
-				HistoryReadResult historyResult = new HistoryReadResult();
-				HistoryData data = new HistoryData();
-				List<DataValue> values = new ArrayList<DataValue>();
 				
-				//lets mock some data
-				Double[] mockData = new Double[]{1.12, 1.23, 1.55, 1.22, 1.65, 2.75, 2.03, 2.23, 2.11, 1.77, 1.23, 1.66};
-				long diff = end.getTime() - start.getTime();
-				for (int i = 0; i< mockData.length; i++){
-					//create timestamps so that the datavalues are equally distributed over the requested time range
-					Calendar cal = Calendar.getInstance();
-					cal.setTimeInMillis(diff * i + start.getTime());
-					DateTime dateTime = new DateTime(cal);
-					values.add(new DataValue(new Variant(mockData[i]), StatusCode.GOOD, dateTime, dateTime));
+				for (HistoryReadValueId id: req.getNodesToRead()){
+					LOG.debug("nodeid: " + id.getNodeId());
+					INodeManager nodeMngr = getAddressSpace().getNodeManager(id.getNodeId().getNamespaceIndex());
+					IHistoryManager histMngr = nodeMngr.getHistoryManager();
+					
+					HistoryReadResult histResult = null;
+					if (histMngr != null){
+						histResult = histMngr.readRawModifiedDetails(rawModifiedDetails);
+					}
+					if (histResult == null){
+						//we did not have a nodemanger for this ns-index, or he returned null
+						histResult = new HistoryReadResult(new StatusCode(StatusCodes.Bad_HistoryOperationUnsupported), null, null);
+					}
+					resultList.add(histResult);
 				}
 				
-				data.setDataValues(ArrayUtils.toArray(values, DataValue.class));
-				historyResult.setHistoryData(ExtensionObject.binaryEncode(data));
-				
-				resp.setResults(new HistoryReadResult[]{historyResult});
 			}
-			LOG.info(historyDetails.getClass().getName());
 		} catch (Exception e) {
 			LOG.error(e.getMessage(), e);
 		}
 		
-		
+		resp.setResults(ArrayUtils.toArray(resultList, HistoryReadResult.class));
 		resp.setResponseHeader(buildRespHeader(req));
 		serviceReq.sendResponse(resp);
 	}

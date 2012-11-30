@@ -7,10 +7,12 @@ import org.opcfoundation.ua.core.Node;
 import org.opcfoundation.ua.core.ReferenceNode;
 
 import bpi.most.opcua.server.core.UAServerException;
+import bpi.most.opcua.server.core.history.IHistoryManager;
 
 /**
  * Every {@link INodeManager} is responsible for all nodes
- * belonging to ONE specific namespace
+ * belonging to ONE specific namespace. it also handles history service and
+ * monitoring items for this namespace.
  * 
  * TODO:
  * to not block the client, we could  implement a timeout when calling
@@ -52,4 +54,11 @@ public interface INodeManager {
 	public DataValue readNodeAttribute(NodeId nodeId, UnsignedInteger attrId);
 	
 	public void addNode(Node node, NodeId parentNode, NodeId referenceId);
+	
+	/**
+	 * returns the {@link IHistoryManager} for this {@link INodeManager}. Every
+	 * INodeManager can have at most one {@link IHistoryManager}.
+	 * @return
+	 */
+	public IHistoryManager getHistoryManager();
 }

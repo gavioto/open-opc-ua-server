@@ -7,7 +7,7 @@ import java.util.List;
  * Is used by an {@link AnnotationNodeManager} to get the actual domain specific
  * data. A AnnotationNodeManager does query all data he needs from the
  * implementing class of this interface. Because their are typically more than
- * one class representing domain specific data, there is always the class name
+ * one class representing domain specific data, there is always the class
  * given, for which data should be fetched.
  * 
  * @author harald

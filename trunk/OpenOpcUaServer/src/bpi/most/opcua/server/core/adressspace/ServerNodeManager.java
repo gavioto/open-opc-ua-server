@@ -7,6 +7,9 @@ import org.opcfoundation.ua.builtintypes.UnsignedInteger;
 import org.opcfoundation.ua.core.Node;
 import org.opcfoundation.ua.core.ReferenceNode;
 
+import bpi.most.opcua.server.core.history.HistoryManagerAdapter;
+import bpi.most.opcua.server.core.history.IHistoryManager;
+
 /**
  * manages all nodes of the local server instance. this includes for example
  * session-nodes for every active session and server diagnostics nodes
@@ -49,4 +52,8 @@ public class ServerNodeManager implements INodeManager {
 		return node;
 	}
 
+	@Override
+	public IHistoryManager getHistoryManager() {
+		return new HistoryManagerAdapter();
+	}
 }

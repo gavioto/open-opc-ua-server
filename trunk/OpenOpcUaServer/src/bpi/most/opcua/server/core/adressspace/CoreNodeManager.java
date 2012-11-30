@@ -29,6 +29,8 @@ import org.opcfoundation.ua.core.ServerStatusDataType;
 import org.opcfoundation.ua.core.VariableNode;
 
 import bpi.most.opcua.server.core.UAServerException;
+import bpi.most.opcua.server.core.history.HistoryManagerAdapter;
+import bpi.most.opcua.server.core.history.IHistoryManager;
 import bpi.most.opcua.server.core.parse.CsvNodeIDParser;
 import bpi.most.opcua.server.core.parse.ParsedElement;
 import bpi.most.opcua.server.core.parse.XmlModelParser;
@@ -255,5 +257,10 @@ public class CoreNodeManager implements INodeManager {
 	public DataValue readNodeAttribute(NodeId nodeId, UnsignedInteger attrId) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public IHistoryManager getHistoryManager() {
+		return new HistoryManagerAdapter();
 	}
 }

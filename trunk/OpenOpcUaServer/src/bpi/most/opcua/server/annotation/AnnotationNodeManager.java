@@ -27,8 +27,10 @@ import bpi.most.opcua.server.core.UAServerException;
 import bpi.most.opcua.server.core.adressspace.AddressSpace;
 import bpi.most.opcua.server.core.adressspace.INodeManager;
 import bpi.most.opcua.server.core.adressspace.NodeFactory;
+import bpi.most.opcua.server.core.history.IHistoryManager;
 import bpi.most.opcua.server.core.util.ArrayUtils;
 import bpi.most.opcua.server.core.util.NodeUtils;
+import bpi.most.opcua.server.mock.MockHistoryManager;
 
 /**
  * generating classes at runtime for faster access:
@@ -607,5 +609,10 @@ public class AnnotationNodeManager implements INodeManager {
 	 */
 	private Node buildTypeNode(NodeMapping nodeMapping){
 		return null;
+	}
+
+	@Override
+	public IHistoryManager getHistoryManager() {
+		return new MockHistoryManager();
 	}
 }

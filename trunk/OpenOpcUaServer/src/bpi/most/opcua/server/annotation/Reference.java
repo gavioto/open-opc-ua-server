@@ -13,5 +13,4 @@ public @interface Reference {
 
 	ReferenceType refType() default ReferenceType.hasComponent;
 	String displayName() default "";
-	
 }

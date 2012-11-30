@@ -118,7 +118,7 @@ public class AddressSpace {
 		nodeMgrs.put(nsIndex, partition);
 	}
 	
-	public INodeManager getNodeManagers(int nsIndex){
+	public INodeManager getNodeManager(int nsIndex){
 		return nodeMgrs.get(nsIndex);
 	}
 	
