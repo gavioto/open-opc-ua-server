@@ -1,6 +1,7 @@
 package bpi.most.opcua.server.core.history;
 
 import org.opcfoundation.ua.core.HistoryReadResult;
+import org.opcfoundation.ua.core.HistoryReadValueId;
 import org.opcfoundation.ua.core.ReadRawModifiedDetails;
 
 /**
@@ -10,6 +11,6 @@ import org.opcfoundation.ua.core.ReadRawModifiedDetails;
  */
 public interface IHistoryManager {
 
-	public HistoryReadResult readRawModifiedDetails(ReadRawModifiedDetails rawModifiedDetails);
+	public HistoryReadResult readRawModifiedDetails(HistoryReadValueId histReadValId, ReadRawModifiedDetails rawModifiedDetails);
 	
 }

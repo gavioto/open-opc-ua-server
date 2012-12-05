@@ -81,7 +81,7 @@ public class AttributeServiceHandler extends ServiceHandlerBase implements Attri
 					
 					HistoryReadResult histResult = null;
 					if (histMngr != null){
-						histResult = histMngr.readRawModifiedDetails(rawModifiedDetails);
+						histResult = histMngr.readRawModifiedDetails(id, rawModifiedDetails);
 					}
 					if (histResult == null){
 						//we did not have a nodemanger for this ns-index, or he returned null

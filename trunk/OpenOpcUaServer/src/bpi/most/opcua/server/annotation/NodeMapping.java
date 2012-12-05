@@ -48,7 +48,7 @@ public class NodeMapping {
 	private NodeId parentType;
 	
 	/**
-	 * field which contains the variables value. this is only used for Variable-Nodes.
+	 * field which contains the variables/properties value. this is only used for Variable-Nodes.
 	 * one variable-node can only have one value
 	 */
 	private Field valueField;
@@ -251,10 +251,6 @@ public class NodeMapping {
 	
 	public Object readProperty(String name, Object obj) throws IllegalArgumentException, IllegalAccessException{
 		return readValue(referencesByName.get(name).getField(), obj);
-	}
-	
-	public String getFieldTypeName(String name){
-		return referencesByName.get(name).getField().getClass().getName();
 	}
 	
 	/**

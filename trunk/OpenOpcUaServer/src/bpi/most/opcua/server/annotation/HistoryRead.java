@@ -6,15 +6,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Value is only available for {@link UaNode}s of type
- * Variable or Property. its used for custom types to know which
- * field represents the value of the Varaible or Property
+ * 
+ * annotates a field that it supports history read. it is only used
+ * in combination with {@link Property}, {@link Variable} and {@link Value}
+ * 
  * @author harald
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Value{
-
+public @interface HistoryRead {
 	
+	String qualifier () default "";
+
 }

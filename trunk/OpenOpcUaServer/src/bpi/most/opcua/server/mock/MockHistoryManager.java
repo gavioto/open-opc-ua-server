@@ -15,6 +15,7 @@ import org.opcfoundation.ua.builtintypes.StatusCode;
 import org.opcfoundation.ua.builtintypes.Variant;
 import org.opcfoundation.ua.core.HistoryData;
 import org.opcfoundation.ua.core.HistoryReadResult;
+import org.opcfoundation.ua.core.HistoryReadValueId;
 import org.opcfoundation.ua.core.ReadRawModifiedDetails;
 import org.opcfoundation.ua.encoding.EncodingException;
 
@@ -26,7 +27,7 @@ public class MockHistoryManager implements IHistoryManager{
 	private static final Logger LOG = Logger.getLogger(MockHistoryManager.class);
 	
 	@Override
-	public HistoryReadResult readRawModifiedDetails(ReadRawModifiedDetails rawModifiedDetails) {
+	public HistoryReadResult readRawModifiedDetails(HistoryReadValueId histReadValId, ReadRawModifiedDetails rawModifiedDetails) {
 		LOG.debug("handling readRawModifiedDetails-history-request");
 		Date start = new Date(rawModifiedDetails.getStartTime().getTimeInMillis());
 		Date end = new Date(rawModifiedDetails.getEndTime().getTimeInMillis());

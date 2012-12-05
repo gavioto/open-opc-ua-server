@@ -16,13 +16,16 @@ import org.opcfoundation.ua.builtintypes.QualifiedName;
 import org.opcfoundation.ua.builtintypes.UnsignedByte;
 import org.opcfoundation.ua.builtintypes.UnsignedInteger;
 import org.opcfoundation.ua.builtintypes.Variant;
+import org.opcfoundation.ua.core.HistoryReadResult;
 import org.opcfoundation.ua.core.IdType;
 import org.opcfoundation.ua.core.Identifiers;
 import org.opcfoundation.ua.core.Node;
 import org.opcfoundation.ua.core.ObjectNode;
+import org.opcfoundation.ua.core.ReadRawModifiedDetails;
 import org.opcfoundation.ua.core.ReferenceDescription;
 import org.opcfoundation.ua.core.ReferenceNode;
 
+import bpi.most.opcua.server.annotation.history.AnnotationHistoryManager;
 import bpi.most.opcua.server.core.UAServerException;
 import bpi.most.opcua.server.core.adressspace.AddressSpace;
 import bpi.most.opcua.server.core.adressspace.INodeManager;
@@ -44,7 +47,7 @@ import bpi.most.opcua.server.mock.MockHistoryManager;
  * @author harald
  *
  */
-public class AnnotationNodeManager implements INodeManager {
+public class AnnotationNodeManager implements INodeManager{
 
 	private static final Logger LOG = Logger.getLogger(AnnotationNodeManager.class);
 	public static final String ID_SEPARATOR = ":";
@@ -98,6 +101,10 @@ public class AnnotationNodeManager implements INodeManager {
 	 */
 	Map<String, NodeMapping> nodeMappingsPerClassName;
 	
+	/**
+	 * handles history requests
+	 */
+	AnnotationHistoryManager annoHistManager;
 	
 	/**
 	 * rootNode as NodeId was given -> all nodes for this nodemanager will be
@@ -433,15 +440,12 @@ public class AnnotationNodeManager implements INodeManager {
 //			ReferenceDescription typeRef = NodeUtils.mapReferenceNodeToDesc(typeRefNode, addrSpace.getNode(nodeMapping.getTypeDefinition()));
 			refs.add(typeRefNode);
 		}else if (idParts.length == 3){
-//			String propId = idParts[2];
-//			ReferenceDescription typeRef;
+			String name = idParts[2];
 			
-//			LOG.debug("______ reading value for property " + nodeId.getValue());
-			//we only want to fetch the references of another member-variable of the bean.
+			//we want to fetch the references of another member-variable of the bean.
 			
-			//TODO, check if it is a property --> no references, except the typedefinition
-			ReferenceNode typeRefNode = new ReferenceNode(Identifiers.HasTypeDefinition, false, new ExpandedNodeId(Identifiers.PropertyType));
-//			typeRef = NodeUtils.mapReferenceNodeToDesc(typeRefNode, addrSpace.getNode(Identifiers.PropertyType));
+			ReferenceMapping refMapping = nodeMapping.getReferenceByName(name);
+			ReferenceNode typeRefNode = new ReferenceNode(Identifiers.HasTypeDefinition, false, new ExpandedNodeId(refMapping.getTypeDefinition()));
 			
 			// if its an @Ref --> check the bean for its references
 			// do not forget typedefinition!
@@ -554,7 +558,7 @@ public class AnnotationNodeManager implements INodeManager {
 		return nm;
 	}
 
-	private NodeMapping getNodeMapping(String nodeName){
+	public NodeMapping getNodeMapping(String nodeName){
 		return nodeMappingsPerClassName.get(nodeName);
 	}
 	
@@ -610,9 +614,14 @@ public class AnnotationNodeManager implements INodeManager {
 	private Node buildTypeNode(NodeMapping nodeMapping){
 		return null;
 	}
+	
+	public void setHistoryManager(IAnnotationHistoryManager histMngr){
+		annoHistManager = new AnnotationHistoryManager(this, histMngr);
+	}
 
 	@Override
 	public IHistoryManager getHistoryManager() {
-		return new MockHistoryManager();
+		return annoHistManager;
 	}
+
 }

@@ -46,6 +46,11 @@ public class ReferenceMapping {
 	 * nodeclass of the target node
 	 */
 	private NodeClass nodeClass;
+	
+	/**
+	 * TODO support this structure
+	 */
+	private NodeMapping referencedNodeMapping;
 
 	/**
 	 * @return the referenceType

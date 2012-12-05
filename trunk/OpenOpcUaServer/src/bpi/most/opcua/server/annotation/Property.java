@@ -4,7 +4,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * a property is just a shortcut for creating
+ * a property is just a short form for creating
  * a {@link Reference} with referenceType
  * set to hasProperty 
  * @author harald

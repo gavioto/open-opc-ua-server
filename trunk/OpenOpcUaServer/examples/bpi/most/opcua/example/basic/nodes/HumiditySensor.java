@@ -4,6 +4,7 @@ import org.opcfoundation.ua.core.NodeClass;
 
 import bpi.most.opcua.server.annotation.AnnotationNodeManager;
 import bpi.most.opcua.server.annotation.DisplayName;
+import bpi.most.opcua.server.annotation.HistoryRead;
 import bpi.most.opcua.server.annotation.Property;
 import bpi.most.opcua.server.annotation.UaNode;
 import bpi.most.opcua.server.annotation.Value;
@@ -11,10 +12,13 @@ import bpi.most.opcua.server.annotation.Value;
 @UaNode(nodeClass = NodeClass.Variable)
 public class HumiditySensor{
 
+	public static final String HISTORY = "humHistory";
+	
 	/**
 	 * current value of the sensor
 	 */
 	@Value
+	@HistoryRead(qualifier=HISTORY)
 	private Double value;
 	
 	@DisplayName

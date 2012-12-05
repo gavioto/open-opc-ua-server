@@ -12,6 +12,7 @@ import org.opcfoundation.ua.transport.security.KeyPair;
 import org.opcfoundation.ua.transport.security.SecurityMode;
 import org.opcfoundation.ua.utils.CertificateUtils;
 
+import bpi.most.opcua.example.basic.history.SampleHistoryNodeManager;
 import bpi.most.opcua.example.basic.nodes.Floor;
 import bpi.most.opcua.example.basic.nodes.HumiditySensor;
 import bpi.most.opcua.example.basic.nodes.Room;
@@ -73,6 +74,11 @@ public class SampleServer {
 		annoNMgr.addObjectToIntrospect(new Room());
 		annoNMgr.addObjectToIntrospect(new HumiditySensor());
 		annoNMgr.addObjectToIntrospect(new TemperatureSensor());
+		
+		//add a history manager
+		SampleHistoryNodeManager myHistNMgr = new SampleHistoryNodeManager();
+		annoNMgr.setHistoryManager(myHistNMgr);
+		
 		s.addNodeManager(annoNMgr);
 		
 		//start the server so that it is ready to serve requests.
