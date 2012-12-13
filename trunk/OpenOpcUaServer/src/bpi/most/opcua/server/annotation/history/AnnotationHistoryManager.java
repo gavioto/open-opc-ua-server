@@ -73,7 +73,7 @@ public class AnnotationHistoryManager implements IHistoryManager {
 
 			if (histMngr != null) {
 				// TODO find out the actual historyRead ID
-				historyValues = histMngr.getHistoryValues(nodeMapping.getClass(), beanId, fieldName, start, end);
+				historyValues = histMngr.getHistoryValues(nodeMapping.getClazz(), beanId, fieldName, start, end);
 			}
 
 		}

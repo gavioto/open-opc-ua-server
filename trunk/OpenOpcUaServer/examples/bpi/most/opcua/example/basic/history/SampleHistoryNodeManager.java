@@ -15,7 +15,7 @@ public class SampleHistoryNodeManager implements IAnnotationHistoryManager {
 
 		List<HistoryValue> values = new ArrayList<HistoryValue>();
 
-		System.out.println("data for " + historyQualfier);
+		System.out.println(String.format("data for %s, %s, %s", clazz.getName(), id, historyQualfier));
 		
 		// lets mock some data
 		Double[] mockData = new Double[] {  };

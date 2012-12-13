@@ -1,9 +1,6 @@
 package bpi.most.opcua.server.handler;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,14 +8,11 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.opcfoundation.ua.builtintypes.DataValue;
 import org.opcfoundation.ua.builtintypes.DateTime;
-import org.opcfoundation.ua.builtintypes.ExtensionObject;
 import org.opcfoundation.ua.builtintypes.NodeId;
 import org.opcfoundation.ua.builtintypes.StatusCode;
 import org.opcfoundation.ua.builtintypes.UnsignedInteger;
-import org.opcfoundation.ua.builtintypes.Variant;
 import org.opcfoundation.ua.common.ServiceFaultException;
 import org.opcfoundation.ua.core.AttributeServiceSetHandler;
-import org.opcfoundation.ua.core.HistoryData;
 import org.opcfoundation.ua.core.HistoryReadRequest;
 import org.opcfoundation.ua.core.HistoryReadResponse;
 import org.opcfoundation.ua.core.HistoryReadResult;
@@ -65,11 +59,11 @@ public class AttributeServiceHandler extends ServiceHandlerBase implements Attri
 		try {
 			Object historyDetails = req.getHistoryReadDetails().decode();
 			if (historyDetails instanceof ReadEventDetails){
-				
+				//we wont support that
 			}else if (historyDetails instanceof ReadAtTimeDetails){
-				
+				//reads values at specific timestamps
 			}else if (historyDetails instanceof ReadProcessedDetails){
-				
+				//read processed values for a specified resampleinterval
 			}else if (historyDetails instanceof ReadRawModifiedDetails){
 				ReadRawModifiedDetails rawModifiedDetails = (ReadRawModifiedDetails) historyDetails;
 				
