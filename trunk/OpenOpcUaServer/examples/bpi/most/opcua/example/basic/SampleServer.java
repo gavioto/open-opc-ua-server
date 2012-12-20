@@ -51,6 +51,7 @@ public class SampleServer {
 		UAServer s = new UAServer();
 		
 		//set the allowed authentication policies. here we support username+password and anonymous sessions
+
 		s.addAnonymousTokenPolicy();
 		s.addUserTokenPolicy();
 

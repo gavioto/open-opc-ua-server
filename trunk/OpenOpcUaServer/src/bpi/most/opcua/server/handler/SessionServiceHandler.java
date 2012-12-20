@@ -14,7 +14,6 @@ import org.opcfoundation.ua.builtintypes.NodeId;
 import org.opcfoundation.ua.builtintypes.StatusCode;
 import org.opcfoundation.ua.builtintypes.UnsignedInteger;
 import org.opcfoundation.ua.common.ServiceFaultException;
-import org.opcfoundation.ua.common.ServiceResultException;
 import org.opcfoundation.ua.core.ActivateSessionRequest;
 import org.opcfoundation.ua.core.ActivateSessionResponse;
 import org.opcfoundation.ua.core.AnonymousIdentityToken;
@@ -81,6 +80,10 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 			return;
 		}
 		
+		LOG.info("clients secure channel-id: " + serviceReq.getChannel().getSecureChannelId());
+		LOG.info("security policy " + serviceReq.getChannel().getSecurityPolicy());
+		LOG.info("security mode " + serviceReq.getChannel().getMessageSecurityMode());
+		
 		ExtensionObject oToken = req.getUserIdentityToken();
 		//how to get the UserIdentityToken?
 		if (oToken != null){
@@ -98,7 +101,7 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 						LOG.info("password is null!");
 					}
 					
-					LOG.info(String.format("==> user %s authenticats with password %s, encryption algorithm is %s, policy id is %s", user, encryptPasswd, encryptAlgo, userNameToken.getPolicyId()));
+					LOG.info(String.format("==> user %s authenticats with password %s, encryption algorithm is %s, usertoken policy-id is %s", user, encryptPasswd, encryptAlgo, userNameToken.getPolicyId()));
 				
 				
 					/*
@@ -119,7 +122,7 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 							 * 
 							 * length: first 4 bytes are the length of the data + the length of the last nonce.
 							 * tokenData: the token data of length x
-							 * serverNonce: the last sent servernonce of length NONCE_LENGTH
+							 * serverNonce: the last sent server nonce of length NONCE_LENGTH
 							 */
 							byte[] passwdBytes = Arrays.copyOfRange(decryptedBytes, 4, decryptedBytes.length - NONCE_LENGTH);
 							byte[] lastNonceBytes = Arrays.copyOfRange(decryptedBytes, decryptedBytes.length - NONCE_LENGTH, decryptedBytes.length);
@@ -127,7 +130,11 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 							String password = new String(passwdBytes);
 							
 							LOG.info("passwd: " + password);
-							LOG.info("nonce equals last one: " + session.getLastNonce().equals(lastNonceBytes));
+							LOG.info("last nonce  :");
+							for (int i=0; i< session.getLastNonce().length; i++){
+								System.out.print(session.getLastNonce()[i]);
+							}
+							LOG.info("from client : ");
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -139,7 +146,7 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 				}else if (uToken instanceof AnonymousIdentityToken){
 					AnonymousIdentityToken anonymToken = (AnonymousIdentityToken) uToken;
 					
-					//TODO ?
+					LOG.info("user authenticated anonymously");
 				}
 				
 			} catch (DecodingException e) {
@@ -228,6 +235,14 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 
 		LOG.info("client nonce is: " + req.getClientNonce());
 		
+		/*
+		 * secure channel id has to be associated with authentication token. only if both are valid
+		 * in following requests, they are responded.
+		 */
+		LOG.info("clients secure channel-id: " + serviceReq.getChannel().getSecureChannelId());
+		LOG.info("security policy " + serviceReq.getChannel().getSecurityPolicy());
+		LOG.info("security mode " + serviceReq.getChannel().getMessageSecurityMode());
+		
 		SessionManager<?> sessionMgr = getSessionManager();
 		
 		Session<?> session = sessionMgr.createSession();
@@ -239,7 +254,9 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		
 		
 		try {
-			session.setClientCertificate(new Cert(req.getClientCertificate()));
+			if (req.getClientCertificate() != null){
+				session.setClientCertificate(new Cert(req.getClientCertificate()));
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -264,7 +281,7 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		session.setLastNonce(nonce);
 		
 		byte[] serverCert = server.getStackServer().getApplicationInstanceCertificate().getCertificate().getEncoded();
-		resp.setServerCertificate(serverCert); //TODO
+		resp.setServerCertificate(serverCert);
 		
 		resp.setServerSoftwareCertificates(null);
 		
@@ -274,8 +291,7 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 				resp.setServerSignature(getServerSignature(serviceReq.getChannel().getSecurityPolicy(), ArrayUtils.concat(req.getClientCertificate(), req.getClientNonce())));
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
 		
 		LOG.info("clients wants endpoints for uri: " + req.getServerUri());

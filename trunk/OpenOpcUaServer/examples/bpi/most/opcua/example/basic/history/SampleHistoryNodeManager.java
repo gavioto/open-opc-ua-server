@@ -28,7 +28,6 @@ public class SampleHistoryNodeManager implements IAnnotationHistoryManager {
 			mockData = new Double[] { 1.12, 1.23, 1.55, 1.22, 1.65, 2.75, 2.03, 2.23, 2.11, 1.77, 1.23, 1.66 };
 		} 
 		
-		
 		Random rand = new Random(System.currentTimeMillis());
 		double randFactor = 1; //rand.nextInt(10 - 1 + 1) + 1;
 		long diff = startTime.getTime() - endTime.getTime();

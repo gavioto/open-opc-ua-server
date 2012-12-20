@@ -64,6 +64,27 @@ public class AttributeServiceHandler extends ServiceHandlerBase implements Attri
 				//reads values at specific timestamps
 			}else if (historyDetails instanceof ReadProcessedDetails){
 				//read processed values for a specified resampleinterval
+				ReadProcessedDetails processedDetails = (ReadProcessedDetails) historyDetails;
+				/*
+				 * entries in the array returned by processedDetails.getAggregateType()
+				 * correlate with the entries in req.getNodesToRead(). this means for every node
+				 * a different aggregate type can be read.
+				 * 
+				 * see OPC UA Part 11, page 38, part 6.4.4.2
+				 * 
+				 */
+				
+				if (processedDetails.getAggregateType().length != req.getNodesToRead().length){
+					/*
+					 * return Bad_AggregateListMismatch; but this code does not exist!?
+					 */
+				}else{
+					for (int i = 0; i < req.getNodesToRead().length; i++){
+						HistoryReadValueId id = req.getNodesToRead()[i];
+						NodeId aggregateType = processedDetails.getAggregateType()[i];
+					}
+				}
+				
 			}else if (historyDetails instanceof ReadRawModifiedDetails){
 				ReadRawModifiedDetails rawModifiedDetails = (ReadRawModifiedDetails) historyDetails;
 				

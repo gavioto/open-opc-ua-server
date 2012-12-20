@@ -19,6 +19,7 @@ import org.opcfoundation.ua.core.UserTokenType;
 import org.opcfoundation.ua.transport.Endpoint;
 import org.opcfoundation.ua.transport.security.KeyPair;
 import org.opcfoundation.ua.transport.security.SecurityMode;
+import org.opcfoundation.ua.transport.security.SecurityPolicy;
 
 import bpi.most.opcua.server.core.adressspace.AddrSpaceBuilder;
 import bpi.most.opcua.server.core.adressspace.AddressSpace;
@@ -102,7 +103,8 @@ represent the local server.
 	
 	public void addUserTokenPolicy(){		
 		stackServer.addUserTokenPolicy(UserTokenPolicy.SECURE_USERNAME_PASSWORD);
-		stackServer.addUserTokenPolicy(new UserTokenPolicy("username", UserTokenType.UserName, null, null, null));
+//		stackServer.addUserTokenPolicy(UserTokenPolicy.SECURE_USERNAME_PASSWORD_BASIC256);
+//		stackServer.addUserTokenPolicy(new UserTokenPolicy("username", UserTokenType.UserName, null, null, SecurityPolicy.NONE.getPolicyUri()));
 	}
 	
 	
@@ -187,6 +189,7 @@ represent the local server.
 	 * @return
 	 */
 	public List<EndpointDescription> getEndpointDescriptionsForUri(String uri){
+		LOG.debug("client wants endpoints for uri: " + uri);
 		List<EndpointDescription> epdList = new ArrayList<EndpointDescription>();
 		
 		for (EndpointDescription epDesc: stackServer.getEndpointDescriptions()){
@@ -194,6 +197,8 @@ represent the local server.
 				epdList.add(epDesc);
 			}
 		}
+		
+		LOG.debug("found endpoint: " + epdList);
 		
 		return epdList;
 	}

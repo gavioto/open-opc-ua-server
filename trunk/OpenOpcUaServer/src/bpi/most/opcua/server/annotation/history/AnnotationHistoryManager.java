@@ -58,7 +58,6 @@ public class AnnotationHistoryManager implements IHistoryManager {
 			 * are annotated with @HistoryRead
 			 */
 			
-			
 			String fieldName = idParts[2];
 
 			NodeMapping nodeMapping;
@@ -66,13 +65,12 @@ public class AnnotationHistoryManager implements IHistoryManager {
 			Class<?> targetType = nodeMapping.getReferencedDataType(fieldName);
 			
 			NodeMapping fieldMapping = nodeMngr.getNodeMapping(targetType.getSimpleName());
-			
 
 			Date start = new Date(rawModifiedDetails.getStartTime().getTimeInMillis());
 			Date end = new Date(rawModifiedDetails.getEndTime().getTimeInMillis());
 
 			if (histMngr != null) {
-				// TODO find out the actual historyRead ID
+				// TODO find out the actual historyRead ID and do not call the implementation with the "fieldName"
 				historyValues = histMngr.getHistoryValues(nodeMapping.getClazz(), beanId, fieldName, start, end);
 			}
 
