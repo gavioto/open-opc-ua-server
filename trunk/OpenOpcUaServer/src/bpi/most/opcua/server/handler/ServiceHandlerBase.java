@@ -76,12 +76,12 @@ public class ServiceHandlerBase {
 
 		req.sendResponse(resp);
 	}
-
+	
 	public void init(UAServer server) {
 		this.server = server;
 	}
 
-	protected SessionManager getSessionManager() {
+	protected SessionManager<?> getSessionManager() {
 		return server.getSessionManager();
 	}
 

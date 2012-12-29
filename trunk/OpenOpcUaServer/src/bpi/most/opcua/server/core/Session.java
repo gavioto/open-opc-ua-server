@@ -31,13 +31,6 @@ public class Session<T> {
 	 */
 	private NodeId sessionID;
 
-	/**<T>
-	 * informatin that describes the client application
-	 */
-	private ApplicationDescription clientDescription;
-
-	private Cert clientCertificate;
-
 	/**
 	 * current {@link ServerSecureChannel}
 	 */
@@ -84,10 +77,15 @@ public class Session<T> {
 	private Locale locale = Locale.ENGLISH;
 	
 	/**
+	 * information of the client associated with this session
+	 */
+	private ClientInfo clientInfo;
+	
+	/**
 	 * a domain specific custom object.
 	 */
 	private T customObj;
-
+	
 	/**
 	 * @return the sessionName
 	 */
@@ -119,21 +117,6 @@ public class Session<T> {
 	}
 
 	/**
-	 * @return the clientDescription
-	 */
-	public ApplicationDescription getClientDescription() {
-		return clientDescription;
-	}
-
-	/**
-	 * @param clientDescription
-	 *            the clientDescription to set
-	 */
-	public void setClientDescription(ApplicationDescription clientDescription) {
-		this.clientDescription = clientDescription;
-	}
-
-	/**
 	 * @return the secureChannel
 	 */
 	public ServerSecureChannel getSecureChannel() {
@@ -161,21 +144,6 @@ public class Session<T> {
 	 */
 	public void setAuthenticationToken(NodeId authenticationToken) {
 		this.authenticationToken = authenticationToken;
-	}
-
-	/**
-	 * @return the clientCertificate
-	 */
-	public Cert getClientCertificate() {
-		return clientCertificate;
-	}
-
-	/**
-	 * @param clientCertificate
-	 *            the clientCertificate to set
-	 */
-	public void setClientCertificate(Cert clientCertificate) {
-		this.clientCertificate = clientCertificate;
 	}
 
 	/**
@@ -241,9 +209,7 @@ public class Session<T> {
 	@Override
 	public String toString() {
 		return "Session [sessionName=" + sessionName + ", sessionID="
-				+ sessionID + ", clientDescription=" + clientDescription
-				+ ", clientCertificate=" + clientCertificate
-				+ ", secureChannel=" + secureChannel + ", authenticationToken="
+				+ sessionID + ", secureChannel=" + secureChannel + ", authenticationToken="
 				+ authenticationToken + ", timeout=" + timeout
 				+ ", maxRespMsgSize=" + maxRespMsgSize + "]";
 	}
@@ -282,5 +248,19 @@ public class Session<T> {
 	 */
 	public void setLocale(Locale locale) {
 		this.locale = locale;
+	}
+
+	/**
+	 * @return the clientInfo
+	 */
+	public ClientInfo getClientInfo() {
+		return clientInfo;
+	}
+
+	/**
+	 * @param clientInfo the clientInfo to set
+	 */
+	public void setClientInfo(ClientInfo clientInfo) {
+		this.clientInfo = clientInfo;
 	}
 }

@@ -40,6 +40,8 @@ import org.opcfoundation.ua.transport.security.SecurityPolicy;
 import org.opcfoundation.ua.utils.CertificateUtils;
 import org.opcfoundation.ua.utils.CryptoUtil;
 
+import bpi.most.opcua.server.core.ClientIdentity;
+import bpi.most.opcua.server.core.ClientInfo;
 import bpi.most.opcua.server.core.Session;
 import bpi.most.opcua.server.core.SessionManager;
 import bpi.most.opcua.server.core.util.ArrayUtils;
@@ -71,9 +73,8 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		ActivateSessionResponse resp = new ActivateSessionResponse();
 		
 		NodeId authToken = req.getRequestHeader().getAuthenticationToken();
-		Session session = server.getSessionManager().getSession(authToken);
+		Session<?> session = server.getSessionManager().getSession(authToken);
 		if (session == null){
-			//TODO return service fault!
 			resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_SessionIdInvalid));
 			resp.setResults(new StatusCode[]{new StatusCode(StatusCodes.Bad_SessionIdInvalid)});
 			sendResp(serviceReq, resp);
@@ -85,79 +86,51 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		LOG.info("security mode " + serviceReq.getChannel().getMessageSecurityMode());
 		
 		ExtensionObject oToken = req.getUserIdentityToken();
-		//how to get the UserIdentityToken?
+		ClientIdentity clientIdentity = null;
 		if (oToken != null){
 			try {
 				UserIdentityToken uToken = (UserIdentityToken) oToken.decode();
 				if (uToken instanceof UserNameIdentityToken){
 					UserNameIdentityToken userNameToken = (UserNameIdentityToken) uToken;
-					String user = userNameToken.getUserName();
-					byte[] encryptPasswd = null;
-					String encryptAlgo = userNameToken.getEncryptionAlgorithm();
-					if (userNameToken.getPassword() != null){
-						encryptPasswd = userNameToken.getPassword();
-					}else{
-						LOG.info(((byte[])oToken.getObject()).length + "\n" + oToken.getTypeId());
-						LOG.info("password is null!");
-					}
-					
-					LOG.info(String.format("==> user %s authenticats with password %s, encryption algorithm is %s, usertoken policy-id is %s", user, encryptPasswd, encryptAlgo, userNameToken.getPolicyId()));
+					clientIdentity = readClientIdentity(userNameToken, session);
 				
-				
-					/*
-					 * decrypt the password
-					 */
-					try {
-						if (encryptPasswd != null){
-							LOG.info("encrypted passwd length: " + encryptPasswd.length);
-							KeyPair kp = server.getStackServer().getApplicationInstanceCertificate();
-							
-							Cipher cipher = CryptoUtil.getAsymmetricCipher(encryptAlgo);
-							cipher.init(Cipher.DECRYPT_MODE, kp.getPrivateKey().getPrivateKey());
-							byte[] decryptedBytes = cipher.doFinal(encryptPasswd);
-							
-							
-							/*
-							 * part 4 describes the structure of the decrypted bytes: chapter 7.35.1, table 169
-							 * 
-							 * length: first 4 bytes are the length of the data + the length of the last nonce.
-							 * tokenData: the token data of length x
-							 * serverNonce: the last sent server nonce of length NONCE_LENGTH
-							 */
-							byte[] passwdBytes = Arrays.copyOfRange(decryptedBytes, 4, decryptedBytes.length - NONCE_LENGTH);
-							byte[] lastNonceBytes = Arrays.copyOfRange(decryptedBytes, decryptedBytes.length - NONCE_LENGTH, decryptedBytes.length);
-							
-							String password = new String(passwdBytes);
-							
-							LOG.info("passwd: " + password);
-							LOG.info("last nonce  :");
-							for (int i=0; i< session.getLastNonce().length; i++){
-								System.out.print(session.getLastNonce()[i]);
-							}
-							LOG.info("from client : ");
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				
-				
-				}else if (uToken instanceof X509IdentityToken){
-					X509IdentityToken certToken = (X509IdentityToken) uToken;
 				}else if (uToken instanceof AnonymousIdentityToken){
 					AnonymousIdentityToken anonymToken = (AnonymousIdentityToken) uToken;
+					LOG.info("user authenticates anonymously");
 					
-					LOG.info("user authenticated anonymously");
+				}else if (uToken instanceof X509IdentityToken){
+					X509IdentityToken certToken = (X509IdentityToken) uToken;
+					
+					//this type of authentication is not supported at the moment
+					resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_IdentityTokenRejected));
+					resp.setResults(new StatusCode[]{new StatusCode(StatusCodes.Bad_IdentityTokenRejected)});
+					sendResp(serviceReq, resp);
+					return;
 				}
 				
 			} catch (DecodingException e) {
-				e.printStackTrace();
+				LOG.error(e.getMessage());
 			}
-		}else{
-			LOG.debug("--> User wants an anonymous session");
 		}
 		
-		//TODO call server implementation with user credentials
+		//call server implementation with clientIdentity
+		if (clientIdentity != null){
+			boolean authenticated = server.authenticate(clientIdentity);
+			if (authenticated){
+				LOG.info("authentication was successful");
+			}else{
+				LOG.info("authentication failed, activateSession not successful");
+				
+				//this type of authentication is not supported at the moment
+				resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_UserAccessDenied));
+				resp.setResults(new StatusCode[]{new StatusCode(StatusCodes.Bad_UserAccessDenied)});
+				sendResp(serviceReq, resp);
+				return;
+			}
+		}
+		
 		session.setActive(true);
+		session.getClientInfo().setClientIdentity(clientIdentity);
 		
 		// build response header
 		ResponseHeader respHeader = buildRespHeader(req);
@@ -171,8 +144,6 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		byte[] nonce = CryptoUtil.createNonce(NONCE_LENGTH);
 		resp.setServerNonce(nonce);
 		session.setLastNonce(nonce);
-		
-		
 		
 		resp.setResults(new StatusCode[]{StatusCode.GOOD});
 		LOG.debug("client sent software certificates:" + req.getClientSoftwareCertificates());
@@ -246,19 +217,20 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		SessionManager<?> sessionMgr = getSessionManager();
 		
 		Session<?> session = sessionMgr.createSession();
-		session.setClientDescription(req.getClientDescription());
+		ClientInfo clientInfo = new ClientInfo();
+		session.setClientInfo(clientInfo);
 		
 		//make this visible in the adressspace
 		//if this is empty, the server creates a value
 		session.setSessionName(req.getSessionName());
 		
-		
+		clientInfo.setClientDescription(req.getClientDescription());
 		try {
 			if (req.getClientCertificate() != null){
-				session.setClientCertificate(new Cert(req.getClientCertificate()));
+				clientInfo.setClientCertificate(new Cert(req.getClientCertificate()));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 		}
 		
 		session.setTimeout(getSessionTimeout(req.getRequestedSessionTimeout()));
@@ -294,8 +266,8 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 			LOG.error(e.getMessage(), e);
 		}
 		
-		LOG.info("clients wants endpoints for uri: " + req.getServerUri());
-		List<EndpointDescription> endpointList = server.getEndpointDescriptionsForUri(req.getServerUri());
+		LOG.info("clients wants endpoints for uri: " + req.getEndpointUrl());
+		List<EndpointDescription> endpointList = server.getEndpointDescriptionsForUri(req.getEndpointUrl());
 		LOG.info("found endpoints: " + endpointList.size());
 		if (endpointList.size() > 0){
 			EndpointDescription[] endpointArray = new EndpointDescription[endpointList.size()];
@@ -308,7 +280,6 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		resp.setMaxRequestMessageSize(new UnsignedInteger(0));
 		
 		sendResp(serviceReq, resp);
-		System.out.println("blu");
 	}
 	
 	private void validate(CreateSessionRequest req){
@@ -335,8 +306,8 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 	}
 	
 	/**
-	 * creates a reasonable sessiontimeout in milliseconds and therefore
-	 * tries to meet the clients decision. we only support sessiontimeouts
+	 * creates a reasonable session timeout in milliseconds and therefore
+	 * tries to meet the clients decision. we only support session timeouts
 	 * between 10 minutes and one hour for now
 	 * @param requestedTimeout
 	 * @return
@@ -346,7 +317,7 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		if (requestedTimeout != null &&
 				(requestedTimeout >= 1000 * 60 * 10 ||
 				 requestedTimeout <= 1000 * 60 * 60)){
-			//TODO may change this her e
+			//TODO may change this here
 			revisedTimeout = requestedTimeout;
 		}else{
 			revisedTimeout = 1000 * 60 * 30.0; //30 min
@@ -354,4 +325,77 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		
 		return revisedTimeout;
 	}
+	
+	/**
+	 * creates a {@link ClientIdentity} object of the given {@link UserNameIdentityToken}. therefore
+	 * the sent username and password are extracted. the password may be encrypted. if so, it is decrypted
+	 * with the set encryption algorithm.
+	 * 
+	 * @param userNameToken
+	 * @return
+	 */
+	private ClientIdentity readClientIdentity(UserNameIdentityToken userNameToken, Session session){
+		LOG.info("client uses username+password to authenticate, policy-id is " + userNameToken.getPolicyId());
+		
+		String user = userNameToken.getUserName();
+		String password = null;
+		
+		//there is a password
+		if (userNameToken.getPassword() != null){
+			//the password is encrypted
+			if (userNameToken.getEncryptionAlgorithm() != null){
+				byte[] encryptPasswd = null;
+				String encryptAlgo = userNameToken.getEncryptionAlgorithm();
+				encryptPasswd = userNameToken.getPassword();
+				
+				LOG.info(String.format("used encryption algorithm: %s", encryptAlgo));
+				
+				/*
+				 * decrypt the password
+				 */
+				try {
+					if (encryptPasswd != null){
+						LOG.info("encrypted passwd length: " + encryptPasswd.length);
+						KeyPair kp = server.getStackServer().getApplicationInstanceCertificate();
+						
+						Cipher cipher = CryptoUtil.getAsymmetricCipher(encryptAlgo);
+						cipher.init(Cipher.DECRYPT_MODE, kp.getPrivateKey().getPrivateKey());
+						byte[] decryptedBytes = cipher.doFinal(encryptPasswd);
+						
+						
+						/*
+						 * part 4 describes the structure of the decrypted bytes: chapter 7.35.1, table 169
+						 * 
+						 * length: first 4 bytes are the length of the data + the length of the last nonce.
+						 * tokenData: the token data of length x
+						 * serverNonce: the last sent server nonce of length NONCE_LENGTH
+						 */
+						byte[] passwdBytes = Arrays.copyOfRange(decryptedBytes, 4, decryptedBytes.length - NONCE_LENGTH);
+						byte[] lastNonceBytes = Arrays.copyOfRange(decryptedBytes, decryptedBytes.length - NONCE_LENGTH, decryptedBytes.length);
+						
+						password = new String(passwdBytes);
+						
+						//test if the client sent the same nonce in his request as the server in his last response.
+						boolean nonceValid = Arrays.equals(lastNonceBytes, session.getLastNonce());
+						LOG.info("nonce correct: " + nonceValid);
+						//TODO throw exception here if not valid
+					}
+				} catch (Exception e) {
+					LOG.error(e.getMessage(), e);
+				}
+				
+			}else{
+				//the password is not encrypted
+				LOG.info("password is sent unencrypted");
+				password = new String(userNameToken.getPassword());
+			}
+		}else{
+			LOG.info("password is null!");
+		}
+		
+//		LOG.info(String.format("user: %s, password: %s", user, password));
+		
+		return new ClientIdentity(user, password);
+	}
+	
 }

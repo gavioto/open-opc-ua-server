@@ -14,6 +14,7 @@ import org.opcfoundation.ua.common.ServiceResultException;
 import org.opcfoundation.ua.core.ApplicationDescription;
 import org.opcfoundation.ua.core.EndpointDescription;
 import org.opcfoundation.ua.core.SignedSoftwareCertificate;
+import org.opcfoundation.ua.core.UserIdentityToken;
 import org.opcfoundation.ua.core.UserTokenPolicy;
 import org.opcfoundation.ua.core.UserTokenType;
 import org.opcfoundation.ua.transport.Endpoint;
@@ -24,6 +25,7 @@ import org.opcfoundation.ua.transport.security.SecurityPolicy;
 import bpi.most.opcua.server.core.adressspace.AddrSpaceBuilder;
 import bpi.most.opcua.server.core.adressspace.AddressSpace;
 import bpi.most.opcua.server.core.adressspace.INodeManager;
+import bpi.most.opcua.server.core.auth.IUserPasswordAuthenticator;
 import bpi.most.opcua.server.handler.AttributeServiceHandler;
 import bpi.most.opcua.server.handler.BrowseServiceHandler;
 import bpi.most.opcua.server.handler.SessionServiceHandler;
@@ -73,6 +75,8 @@ public class UAServer {
 	
 	protected List<INodeManager> customNodeManagers;
 	
+	protected IUserPasswordAuthenticator userPasswordAuthenticator;
+	
 	/**
 	 * TODO: part 4, seite 22, footnote 1:
 	 * 
@@ -101,10 +105,36 @@ represent the local server.
 		}
 	}
 	
-	public void addUserTokenPolicy(){		
-		stackServer.addUserTokenPolicy(UserTokenPolicy.SECURE_USERNAME_PASSWORD);
-//		stackServer.addUserTokenPolicy(UserTokenPolicy.SECURE_USERNAME_PASSWORD_BASIC256);
-//		stackServer.addUserTokenPolicy(new UserTokenPolicy("username", UserTokenType.UserName, null, null, SecurityPolicy.NONE.getPolicyUri()));
+	/**
+	 * this method has to be called if user+password authentication should be used. An {@link IUserPasswordAuthenticator} and several
+	 * UserTokenPolicies with {@link UserTokenType#UserName} have to be given. If one of them is null or a {@link UserTokenPolicy} with
+	 * another TokenType as {@link UserTokenType#UserName} is given, a {@link UAServerException} is thrown.
+	 * 
+	 * @param authenticator
+	 * @param policies
+	 * @throws UAServerException
+	 */
+	public void addUserTokenPolicy(IUserPasswordAuthenticator authenticator, UserTokenPolicy... policies) throws UAServerException{
+		//validate the given policies
+		if (policies == null){
+			throw new UAServerException("there must be at least one UserTokenPolicy passed");
+		}else{
+			for (UserTokenPolicy policy: policies){
+				if (policy == null){
+					throw new UAServerException("A given UserTokenPolicy is null");
+				}else{
+					if (!UserTokenType.UserName.equals(policy.getTokenType())){
+						throw new UAServerException(String.format("the given UserTokenPolicy %s does not have UserTokenType.UserName", policy.getPolicyId()));
+					}
+				}
+			}
+		}
+		
+		//everything is good :)
+		for (UserTokenPolicy policy: policies){
+			stackServer.addUserTokenPolicy(policy);
+		}
+		userPasswordAuthenticator = authenticator;
 	}
 	
 	
@@ -189,7 +219,7 @@ represent the local server.
 	 * @return
 	 */
 	public List<EndpointDescription> getEndpointDescriptionsForUri(String uri){
-		LOG.debug("client wants endpoints for uri: " + uri);
+		LOG.info("client wants endpoints for uri: " + uri);
 		List<EndpointDescription> epdList = new ArrayList<EndpointDescription>();
 		
 		for (EndpointDescription epDesc: stackServer.getEndpointDescriptions()){
@@ -198,9 +228,21 @@ represent the local server.
 			}
 		}
 		
-		LOG.debug("found endpoint: " + epdList);
+		LOG.info("found endpoint: " + epdList);
 		
 		return epdList;
+	}
+	
+	public boolean authenticate(ClientIdentity clientIdentity){
+		boolean authenticated;
+		if (userPasswordAuthenticator != null){
+			authenticated = userPasswordAuthenticator.authenticate(clientIdentity);
+		}else{
+			LOG.error("Client tried to authenticate but userPasswordAuthenticator was null!!");
+			authenticated = false;
+		}
+		
+		return authenticated;
 	}
 	
 	/**
