@@ -5,9 +5,7 @@ import java.util.Locale;
 import org.opcfoundation.ua.builtintypes.NodeId;
 import org.opcfoundation.ua.builtintypes.UnsignedInteger;
 import org.opcfoundation.ua.core.ActivateSessionRequest;
-import org.opcfoundation.ua.core.ApplicationDescription;
 import org.opcfoundation.ua.transport.ServerSecureChannel;
-import org.opcfoundation.ua.transport.security.Cert;
 
 /**
  * 
@@ -16,9 +14,8 @@ import org.opcfoundation.ua.transport.security.Cert;
  * 
  * @author harald
  *
- * @param <T>
  */
-public class Session<T> {
+public class Session {
 
 	/**
 	 * Human readable identification of the session
@@ -84,7 +81,7 @@ public class Session<T> {
 	/**
 	 * a domain specific custom object.
 	 */
-	private T customObj;
+	private Object customObj;
 	
 	/**
 	 * @return the sessionName
@@ -214,11 +211,11 @@ public class Session<T> {
 				+ ", maxRespMsgSize=" + maxRespMsgSize + "]";
 	}
 
-	public T getCustomObj() {
+	public Object getCustomObj() {
 		return customObj;
 	}
 
-	public void setCustomObj(T customObj) {
+	public void setCustomObj(Object customObj) {
 		this.customObj = customObj;
 	}
 

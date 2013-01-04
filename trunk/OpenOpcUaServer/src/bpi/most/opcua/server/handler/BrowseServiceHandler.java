@@ -85,6 +85,7 @@ public class BrowseServiceHandler extends ServiceHandlerBase implements NodeMana
 	public void onBrowse(
 			EndpointServiceRequest<BrowseRequest, BrowseResponse> serviceReq)
 			throws ServiceFaultException {
+		initRequestContext(serviceReq);
 		BrowseRequest req = serviceReq.getRequest();
 		BrowseResponse resp = new BrowseResponse();
 		
@@ -194,6 +195,7 @@ public class BrowseServiceHandler extends ServiceHandlerBase implements NodeMana
 	public void onBrowseNext(
 			EndpointServiceRequest<BrowseNextRequest, BrowseNextResponse> serviceReq)
 			throws ServiceFaultException {
+		initRequestContext(serviceReq);
 		BrowseNextRequest req = serviceReq.getRequest();
 		BrowseNextResponse resp = new BrowseNextResponse();
 		
@@ -202,9 +204,10 @@ public class BrowseServiceHandler extends ServiceHandlerBase implements NodeMana
 
 	@Override
 	public void onTranslateBrowsePathsToNodeIds(
+			
 			EndpointServiceRequest<TranslateBrowsePathsToNodeIdsRequest, TranslateBrowsePathsToNodeIdsResponse> serviceReq)
 			throws ServiceFaultException {
-		
+		initRequestContext(serviceReq);
 		TranslateBrowsePathsToNodeIdsRequest req = serviceReq.getRequest();
 		TranslateBrowsePathsToNodeIdsResponse resp = new TranslateBrowsePathsToNodeIdsResponse();
 		

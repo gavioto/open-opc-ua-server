@@ -51,6 +51,7 @@ public class AttributeServiceHandler extends ServiceHandlerBase implements Attri
 	public void onHistoryRead(
 			EndpointServiceRequest<HistoryReadRequest, HistoryReadResponse> serviceReq)
 			throws ServiceFaultException {
+		initRequestContext(serviceReq);
 		HistoryReadRequest req = serviceReq.getRequest();
 		HistoryReadResponse resp = new HistoryReadResponse();
 		LOG.info("---------------  got history read request: ");
@@ -126,6 +127,7 @@ public class AttributeServiceHandler extends ServiceHandlerBase implements Attri
 	@Override
 	public void onRead(EndpointServiceRequest<ReadRequest, ReadResponse> serviceReq)
 			throws ServiceFaultException {
+		initRequestContext(serviceReq);
 		ReadRequest req = serviceReq.getRequest();
 		ReadResponse resp = new ReadResponse();
 		

@@ -14,13 +14,11 @@ import org.opcfoundation.ua.common.ServiceResultException;
 import org.opcfoundation.ua.core.ApplicationDescription;
 import org.opcfoundation.ua.core.EndpointDescription;
 import org.opcfoundation.ua.core.SignedSoftwareCertificate;
-import org.opcfoundation.ua.core.UserIdentityToken;
 import org.opcfoundation.ua.core.UserTokenPolicy;
 import org.opcfoundation.ua.core.UserTokenType;
 import org.opcfoundation.ua.transport.Endpoint;
 import org.opcfoundation.ua.transport.security.KeyPair;
 import org.opcfoundation.ua.transport.security.SecurityMode;
-import org.opcfoundation.ua.transport.security.SecurityPolicy;
 
 import bpi.most.opcua.server.core.adressspace.AddrSpaceBuilder;
 import bpi.most.opcua.server.core.adressspace.AddressSpace;
@@ -32,7 +30,7 @@ import bpi.most.opcua.server.handler.SessionServiceHandler;
 import bpi.most.opcua.server.handler.TestServiceHandler;
 
 /**
- * a generic opc ua server
+ * a generic OPC UA server
  * 
  * behaves a bit like the builder-pattern cause properties can be set before the {@link UAServer#start()}
  * method is called.

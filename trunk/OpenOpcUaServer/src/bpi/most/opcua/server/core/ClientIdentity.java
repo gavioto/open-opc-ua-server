@@ -10,7 +10,8 @@ package bpi.most.opcua.server.core;
 public class ClientIdentity {
 
 	/**
-	 * username the client used for authentication
+	 * username the client used for authentication. if username is null, the client
+	 * uses an anonymous session.
 	 */
 	private String username;
 	

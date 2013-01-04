@@ -43,6 +43,15 @@ public class SampleServer {
 	private static final String SERVER_ENDPOINT = "opc.tcp://127.0.0.1:6001/sampleuaserver";
 
 	/**
+	 * A custom {@link UserTokenPolicy} which uses username and password
+	 * authentication but without any encryption. This means the client should
+	 * send username and password in plaintext when he calls the ActivateSession
+	 * service. Such a policy should only be used if the connection between
+	 * client and server is secure on itself.
+	 */
+	private static UserTokenPolicy UNSECURE_USERNAME_PASSWORD = new UserTokenPolicy("username_plain", UserTokenType.UserName, null, null, SecurityPolicy.NONE.getPolicyUri());
+
+	/**
 	 * @param args
 	 * @throws URISyntaxException
 	 * @throws IOException
@@ -57,14 +66,14 @@ public class SampleServer {
 
 		/*
 		 * set the allowed authentication policies. here we support
-		 * username+password and anonymous sessions. the unsecurePolicy uses
-		 * UserTokenType.UserName so that the client should send username and password but
-		 * a SecurityPolicy.None so that the password is sent in plain text (not encrypted).
+		 * username+password and anonymous sessions. the
+		 * UNSECURE_USERNAME_PASSWORD policy uses UserTokenType.UserName so that
+		 * the client should send username and password but a
+		 * SecurityPolicy.None so that the password is sent in plain text (not
+		 * encrypted).
 		 */
 		s.addAnonymousTokenPolicy();
-		UserTokenPolicy unsecurePolicy = new UserTokenPolicy("username_unsecure",
-				UserTokenType.UserName, null, null, SecurityPolicy.NONE.getPolicyUri());
-		s.addUserTokenPolicy(new SampleAuthenticator(), UserTokenPolicy.SECURE_USERNAME_PASSWORD, UserTokenPolicy.SECURE_USERNAME_PASSWORD_BASIC256, unsecurePolicy);
+		s.addUserTokenPolicy(new SampleAuthenticator(), UserTokenPolicy.SECURE_USERNAME_PASSWORD, UserTokenPolicy.SECURE_USERNAME_PASSWORD_BASIC256, UNSECURE_USERNAME_PASSWORD);
 
 		// Set some applicationdescriptions
 		ApplicationDescription appDesc = new ApplicationDescription();
