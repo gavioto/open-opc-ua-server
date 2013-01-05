@@ -67,8 +67,10 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		LOG.info("---------------------------- ON ACTIVATE SESSION REQUEST ");
 		LOG.debug(serviceReq);
 
+		initRequestContext(serviceReq);
 		ActivateSessionRequest req = serviceReq.getRequest();
 		ActivateSessionResponse resp = new ActivateSessionResponse();
+		
 		NodeId authToken = req.getRequestHeader().getAuthenticationToken();
 		Session session = server.getSessionManager().getSession(authToken);
 		if (session == null) {
@@ -78,8 +80,6 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 			return;
 		}
 		
-		initRequestContext(serviceReq);
-
 		LOG.info("clients secure channel-id: " + serviceReq.getChannel().getSecureChannelId());
 		LOG.info("security policy " + serviceReq.getChannel().getSecurityPolicy());
 		LOG.info("security mode " + serviceReq.getChannel().getMessageSecurityMode());
@@ -89,6 +89,12 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		if (oToken != null) {
 			try {
 				UserIdentityToken uToken = (UserIdentityToken) oToken.decode();
+				
+				/*
+				 * validate if this policy is really supported by our server 
+				 */
+				validateUserPolicy(uToken.getPolicyId());
+				
 				if (uToken instanceof UserNameIdentityToken) {
 					UserNameIdentityToken userNameToken = (UserNameIdentityToken) uToken;
 					try {
@@ -120,7 +126,14 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 				}
 
 			} catch (DecodingException e) {
-				LOG.error(e.getMessage());
+				LOG.error(e.getMessage(), e);
+			} catch (UAServerException e) {
+				LOG.error(e.getMessage(), e);
+				
+				resp.setResponseHeader(buildErrRespHeader(req, StatusCode.BAD.getValue()));
+				resp.setResults(new StatusCode[] { StatusCode.BAD });
+				sendResp(serviceReq, resp);
+				return;
 			}
 		}
 
@@ -170,6 +183,7 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		LOG.debug("---------------------------- ON CANCEL SESSION REQUEST ");
 		LOG.debug(serviceReq);
 
+		initRequestContext(serviceReq);
 		CancelResponse resp = new CancelResponse();
 		CancelRequest req = serviceReq.getRequest();
 		
@@ -182,6 +196,7 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		LOG.debug("---------------------------- ON CLOSE REQUEST ");
 		LOG.debug(serviceReq);
 
+		initRequestContext(serviceReq);
 		CloseSessionRequest req = serviceReq.getRequest();
 
 		// sessions identified by this token is going to be closed and deleted
@@ -291,7 +306,6 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		LOG.info("found endpoints: " + endpointList.size());
 		if (endpointList.size() > 0) {
 			EndpointDescription[] endpointArray = new EndpointDescription[endpointList.size()];
-			// TODO fill endpontdescription with missing data!!
 			endpointList.toArray(endpointArray);
 			resp.setServerEndpoints((EndpointDescription[]) endpointArray);
 		}
@@ -300,20 +314,6 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		resp.setMaxRequestMessageSize(new UnsignedInteger(0));
 
 		sendResp(serviceReq, resp);
-	}
-
-	private void validate(CreateSessionRequest req) {
-		// if host in req.getEndpointUrl() does not match me,
-		// raise auditurlmismatch event (is that really important for me??)
-	}
-
-	private void validate(ActivateSessionRequest req) {
-	}
-
-	private void validate(CancelRequest req) {
-	}
-
-	private void validate(CloseSessionRequest req) {
 	}
 
 	private SignatureData getServerSignature(SecurityPolicy secPolicy, byte[] dataToSign) throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
@@ -343,6 +343,12 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 		}
 
 		return revisedTimeout;
+	}
+	
+	private void validateUserPolicy(String policyId) throws UAServerException{
+		if (!server.supportsUserTokenPolicy(policyId)){
+			throw new UAServerException("server does not support UserTokenPolicy with id " + policyId);
+		}
 	}
 
 	/**
@@ -405,7 +411,6 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 					// test if the client sent the same nonce in his request
 					// as the server in his last response.
 					boolean nonceValid = Arrays.equals(lastNonceBytes, session.getLastNonce());
-					// TODO throw exception here if not valid
 					if (!nonceValid) {
 						LOG.error("client sent wrong nonce");
 						throw new UAServerException("client sent wrong nonce");

@@ -81,7 +81,9 @@ public class AttributeServiceHandler extends ServiceHandlerBase implements Attri
 					 */
 				}else{
 					for (int i = 0; i < req.getNodesToRead().length; i++){
+						@SuppressWarnings("unused")
 						HistoryReadValueId id = req.getNodesToRead()[i];
+						@SuppressWarnings("unused")
 						NodeId aggregateType = processedDetails.getAggregateType()[i];
 					}
 				}
@@ -118,10 +120,15 @@ public class AttributeServiceHandler extends ServiceHandlerBase implements Attri
 
 	@Override
 	public void onHistoryUpdate(
-			EndpointServiceRequest<HistoryUpdateRequest, HistoryUpdateResponse> arg0)
+			EndpointServiceRequest<HistoryUpdateRequest, HistoryUpdateResponse> serviceReq)
 			throws ServiceFaultException {
-		// TODO Auto-generated method stub
-
+		
+		initRequestContext(serviceReq);
+		HistoryUpdateRequest req = serviceReq.getRequest();
+		HistoryUpdateResponse resp = new HistoryUpdateResponse();
+		
+		resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_ServiceUnsupported));
+		sendResp(serviceReq, resp);
 	}
 
 	@Override
@@ -199,9 +206,14 @@ public class AttributeServiceHandler extends ServiceHandlerBase implements Attri
 	}
 
 	@Override
-	public void onWrite(EndpointServiceRequest<WriteRequest, WriteResponse> arg0)
+	public void onWrite(EndpointServiceRequest<WriteRequest, WriteResponse> serviceReq)
 			throws ServiceFaultException {
-		// TODO Auto-generated method stub
-
+		
+		initRequestContext(serviceReq);
+		WriteRequest req = serviceReq.getRequest();
+		WriteResponse resp = new WriteResponse();
+		
+		resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_ServiceUnsupported));
+		sendResp(serviceReq, resp);
 	}
 }

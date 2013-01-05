@@ -74,7 +74,7 @@ public class ServiceHandlerBase {
 	 * @param resp
 	 */
 	protected <T extends ServiceResponse> void sendResp(EndpointServiceRequest<? extends ServiceRequest, T> req, T resp) {
-		// TODO some logging here
+		// TODO some logging and maybe validation here
 
 		req.sendResponse(resp);
 	}
@@ -93,7 +93,17 @@ public class ServiceHandlerBase {
 		ctx.setServiceRequest(req.getRequest());
 	}
 	
-	public void init(UAServer server) {
+	/**
+	 * returns the {@link Session} associated with the client
+	 * @param req
+	 * @return
+	 */
+	protected Session getSession(ServiceRequest req){
+		return server.getSessionManager().getSession(req.getRequestHeader().getAuthenticationToken());
+	}
+	
+	public void init(UAServer server) {			// TODO may change this here
+
 		this.server = server;
 	}
 

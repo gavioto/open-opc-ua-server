@@ -39,6 +39,7 @@ import org.opcfoundation.ua.core.UnregisterNodesRequest;
 import org.opcfoundation.ua.core.UnregisterNodesResponse;
 import org.opcfoundation.ua.transport.EndpointServiceRequest;
 
+import bpi.most.opcua.server.core.Session;
 import bpi.most.opcua.server.handler.referencefilter.IReferenceFilter;
 import bpi.most.opcua.server.handler.referencefilter.RefDirectionFilter;
 import bpi.most.opcua.server.handler.referencefilter.RefTypeFilter;
@@ -51,34 +52,54 @@ public class BrowseServiceHandler extends ServiceHandlerBase implements NodeMana
 	
 	@Override
 	public void onAddNodes(
-			EndpointServiceRequest<AddNodesRequest, AddNodesResponse> paramEndpointServiceRequest)
+			EndpointServiceRequest<AddNodesRequest, AddNodesResponse> serviceReq)
 			throws ServiceFaultException {
-		// TODO Auto-generated method stub
 		
+		initRequestContext(serviceReq);
+		AddNodesRequest req = serviceReq.getRequest();
+		AddNodesResponse resp = new AddNodesResponse();
+		
+		resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_ServiceUnsupported));
+		sendResp(serviceReq, resp);
 	}
 
 	@Override
 	public void onAddReferences(
-			EndpointServiceRequest<AddReferencesRequest, AddReferencesResponse> paramEndpointServiceRequest)
+			EndpointServiceRequest<AddReferencesRequest, AddReferencesResponse> serviceReq)
 			throws ServiceFaultException {
-		// TODO Auto-generated method stub
 		
+		initRequestContext(serviceReq);
+		AddReferencesRequest req = serviceReq.getRequest();
+		AddReferencesResponse resp = new AddReferencesResponse();
+		
+		resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_ServiceUnsupported));
+		sendResp(serviceReq, resp);
 	}
 
 	@Override
 	public void onDeleteNodes(
-			EndpointServiceRequest<DeleteNodesRequest, DeleteNodesResponse> paramEndpointServiceRequest)
+			EndpointServiceRequest<DeleteNodesRequest, DeleteNodesResponse> serviceReq)
 			throws ServiceFaultException {
-		// TODO Auto-generated method stub
 		
+		initRequestContext(serviceReq);
+		DeleteNodesRequest req = serviceReq.getRequest();
+		DeleteNodesResponse resp = new DeleteNodesResponse();
+		
+		resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_ServiceUnsupported));
+		sendResp(serviceReq, resp);
 	}
 
 	@Override
 	public void onDeleteReferences(
-			EndpointServiceRequest<DeleteReferencesRequest, DeleteReferencesResponse> paramEndpointServiceRequest)
+			EndpointServiceRequest<DeleteReferencesRequest, DeleteReferencesResponse> serviceReq)
 			throws ServiceFaultException {
-		// TODO Auto-generated method stub
 		
+		initRequestContext(serviceReq);
+		DeleteReferencesRequest req = serviceReq.getRequest();
+		DeleteReferencesResponse resp = new DeleteReferencesResponse();
+		
+		resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_ServiceUnsupported));
+		sendResp(serviceReq, resp);
 	}
 
 	@Override
@@ -91,19 +112,28 @@ public class BrowseServiceHandler extends ServiceHandlerBase implements NodeMana
 		
 		resp.setResponseHeader(buildRespHeader(req));
 		
-		//max references per node to return; 0 -> no limitation.
-		//TODO consider this value. therefore continuation points have to be supported!! therefore we have to store the point in our sessioin --> session mgmt has to work better
-		int maxReferences = req.getRequestedMaxReferencesPerNode().intValue();
-		
 //		LOG.info("clients sends browserequest for " + req.getNodesToBrowse().length + " nodes");
 		List<BrowseResult> browseResults = new ArrayList<BrowseResult>();
 		for (BrowseDescription browseDesc: req.getNodesToBrowse()){
 			LOG.info("got browse request for nodeID " + browseDesc.getNodeId());
 			browseResults.add(browse(browseDesc));
 		}
+
+		int maxReferences = req.getRequestedMaxReferencesPerNode().intValue();
+		
+		/*
+		 * create continuation point. maxReferences == 0 --> no limit
+		 */
+		if (maxReferences > 0 && browseResults.size() > maxReferences){
+			LOG.info(String.format("got more browse results (%d) than client wants (%d) ", browseResults.size(), maxReferences));
+			browseResults = browseResults.subList(0, maxReferences - 1);
+			
+			//TODO create continuation point and safe it in the session object
+			@SuppressWarnings("unused")
+			Session session = getSession(req);
+		}
 		
 		resp.setResults(browseResults.toArray(new BrowseResult[browseResults.size()]));
-		
 		sendResp(serviceReq, resp);
 	}
 	
@@ -195,11 +225,15 @@ public class BrowseServiceHandler extends ServiceHandlerBase implements NodeMana
 	public void onBrowseNext(
 			EndpointServiceRequest<BrowseNextRequest, BrowseNextResponse> serviceReq)
 			throws ServiceFaultException {
+		
 		initRequestContext(serviceReq);
 		BrowseNextRequest req = serviceReq.getRequest();
 		BrowseNextResponse resp = new BrowseNextResponse();
 		
 		LOG.info("---------------  got onbrowsenext request: " + req);
+		
+		resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_ServiceUnsupported));
+		sendResp(serviceReq, resp);
 	}
 
 	@Override
@@ -225,34 +259,54 @@ public class BrowseServiceHandler extends ServiceHandlerBase implements NodeMana
 
 	@Override
 	public void onRegisterNodes(
-			EndpointServiceRequest<RegisterNodesRequest, RegisterNodesResponse> paramEndpointServiceRequest)
+			EndpointServiceRequest<RegisterNodesRequest, RegisterNodesResponse> serviceReq)
 			throws ServiceFaultException {
-		// TODO Auto-generated method stub
 		
+		initRequestContext(serviceReq);
+		RegisterNodesRequest req = serviceReq.getRequest();
+		RegisterNodesResponse resp = new RegisterNodesResponse();
+		
+		resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_ServiceUnsupported));
+		sendResp(serviceReq, resp);
 	}
 
 	@Override
 	public void onUnregisterNodes(
-			EndpointServiceRequest<UnregisterNodesRequest, UnregisterNodesResponse> paramEndpointServiceRequest)
+			EndpointServiceRequest<UnregisterNodesRequest, UnregisterNodesResponse> serviceReq)
 			throws ServiceFaultException {
-		// TODO Auto-generated method stub
 		
+		initRequestContext(serviceReq);
+		UnregisterNodesRequest req = serviceReq.getRequest();
+		UnregisterNodesResponse resp = new UnregisterNodesResponse();
+		
+		resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_ServiceUnsupported));
+		sendResp(serviceReq, resp);
 	}
 
 	@Override
 	public void onQueryFirst(
-			EndpointServiceRequest<QueryFirstRequest, QueryFirstResponse> paramEndpointServiceRequest)
+			EndpointServiceRequest<QueryFirstRequest, QueryFirstResponse> serviceReq)
 			throws ServiceFaultException {
-		// TODO Auto-generated method stub
 		
+		initRequestContext(serviceReq);
+		QueryFirstRequest req = serviceReq.getRequest();
+		QueryFirstResponse resp = new QueryFirstResponse();
+		
+		resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_ServiceUnsupported));
+		sendResp(serviceReq, resp);
 	}
 
 	@Override
 	public void onQueryNext(
-			EndpointServiceRequest<QueryNextRequest, QueryNextResponse> paramEndpointServiceRequest)
+			EndpointServiceRequest<QueryNextRequest, QueryNextResponse> serviceReq)
 			throws ServiceFaultException {
-		// TODO Auto-generated method stub
 		
+		initRequestContext(serviceReq);
+		QueryNextRequest req = serviceReq.getRequest();
+		QueryNextResponse resp = new QueryNextResponse();
+		
+		resp.setResponseHeader(buildErrRespHeader(req, StatusCodes.Bad_ServiceUnsupported));
+		sendResp(serviceReq, resp);
 	}
 
 }
