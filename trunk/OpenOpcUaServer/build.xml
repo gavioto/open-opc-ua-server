@@ -4,7 +4,7 @@
     
     <property name="project.name" value="OpenOpcUaServer" />
 	<property name="version" value="0.9" />
-	<property name="build" value="4" />
+	<property name="build" value="5" />
 	<property name="src.dir" value="src" />
 	<property name="examples.dir" value="examples" />
 	<property name="test.dir" value="test" />
@@ -111,5 +111,5 @@
             labels="Featured, OpSys-All" />
 	</target> 
 	
-	<target name="clean-build" depends="clean,build,release" />
+	<target name="clean-build" depends="clean,build" />
 </project>
