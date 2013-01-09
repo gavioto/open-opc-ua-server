@@ -21,8 +21,54 @@ server.addAnonymousTokenPolicy();
 = Username and password =
 
 Username and password authentication is also supported by the server. Therefore you have to provide
- * at least one or more UserTokenPolicies where the UserTokenType is set to UserTokenType.UserName
+ * at least one or more !UserTokenPolicies where the !UserTokenType is set to !UserTokenType.!UserName
  * provide an IUserPasswordAuthenticator implementation which does the actual authentication
+
+{{{
+// create a UAServer instance
+UAServer server = new UAServer();
+
+// create an unsecure username policy where username and password is sent in plain text 
+UserTokenPolicy UNSECURE_USERNAME_PASSWORD = new UserTokenPolicy("username_plain", UserTokenType.UserName, null, null, SecurityPolicy.NONE.getPolicyUri());
+
+//enable username password authentication
+server.addUserTokenPolicy(new SampleAuthenticator(), UserTokenPolicy.SECURE_USERNAME_PASSWORD, UserTokenPolicy.SECURE_USERNAME_PASSWORD_BASIC256, UNSECURE_USERNAME_PASSWORD);
+...
+}}}
+
+== UserTokenPolicies ==
+
+== IUserPasswordAuthenticator Implementation ==
+{{{
+public class SampleAuthenticator implements IUserPasswordAuthenticator {
+
+	private static final Logger LOG = Logger.getLogger(SampleAuthenticator.class);
+
+	@Override
+	public boolean authenticate(ClientIdentity clientIdentity) {
+		LOG.info(String.format("user %s authenticates with password %s", clientIdentity.getUsername(), clientIdentity.getPassword()));
+
+		/*
+		 * actual authentication would be done here
+		 */
+		boolean authenticated = true;
+
+		/*
+		 * in the session we can set a custom User object or whatever we want
+		 * to. therefore we have the userobject in all operations.
+		 * 
+		 * The session contains already the given ClientIdendentity so we do not
+		 * have to store it
+		 */
+		Session s = RequestContext.get().getSession();
+		s.setCustomObj(new SampleUser(clientIdentity.getUsername()));
+
+		return authenticated;
+	}
+
+}
+}}}
+
  
 = Not supported =
 Authentication with X509v3 certificates is neither supported at the moment nor planned to be in the near future.
