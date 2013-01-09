@@ -8,7 +8,15 @@ Two different authentication methods are supported:
 
 = Anonymous =
 
-Clients can connect anonymously, that is they do not send any identity information in their activateSession request.
+Clients can connect anonymously, that is they do not send any identity information in their activateSession request. To support anonymous sessions you have to call the following method on the UaServer object.
+
+{{{
+// create a UAServer instance
+UAServer server = new UAServer();
+//enable anonymous sessions
+server.addAnonymousTokenPolicy();
+...
+}}}
 
 = Username and password =
 
