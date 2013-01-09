@@ -1,0 +1,11 @@
+#summary Describes username and password authentication for the UA Server
+
+= Introduction =
+
+Two different authentication methods are supported:
+ * Anonymous
+ * Username and password
+
+= Anonymous =
+
+= Username and password =
