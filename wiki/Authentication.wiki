@@ -37,9 +37,11 @@ server.addUserTokenPolicy(new SampleAuthenticator(), UserTokenPolicy.SECURE_USER
 }}}
 
 == !UserTokenPolicies ==
-For using username and password authentication at least one (or more) !UserTokenPolicies where the !UserTokenType is set to !UserTokenType.!UserName have to be provided. The !UserTokenPolicy defines how the client authenticates to the server. It contains a field !SecurityPolicyUri which defines the used SecurityPolicy and therefore how the password is sent from the client. This can either be !SecurityPolicy.NONE which means the password is sent in plaintext and therefore not encrypted at all. Or it is set to some other !SecurityPolicy, hence the client has to encrypt the password with the defined encryption algorithm and key length. The server takes care of decrypting the password and call the IUserPasswordAuthenticator authenticator for authentication.
+For using username and password authentication at least one (or more) !UserTokenPolicies where the !UserTokenType is set to !UserTokenType.!UserName have to be provided. The !UserTokenPolicy defines how the client authenticates to the server. It contains a field !SecurityPolicyUri which defines the used !SecurityPolicy and therefore how the password is sent from the client. This can either be !SecurityPolicy.NONE which means the password is sent in plaintext and therefore not encrypted at all. Or it is set to some other !SecurityPolicy, hence the client has to encrypt the password with the defined encryption algorithm and key length. The server takes care of decrypting the password and call the IUserPasswordAuthenticator authenticator for authentication.
 
 == IUserPasswordAuthenticator Implementation ==
+The domain specific authentication process has to be done by implementing the IUserPasswordAuthenticator interface. It contains only one method _authenticate_ which gets an !ClientIdentity object. The !ClientIdentity wraps the username and password sent by the OPC UA client (in it's activateSession request). The method should return true, if authentication was successful and false otherwhise. The class !SampleAuthenticator shows a sample implementation of such an authentication class.
+
 {{{
 public class SampleAuthenticator implements IUserPasswordAuthenticator {
 
@@ -66,10 +68,10 @@ public class SampleAuthenticator implements IUserPasswordAuthenticator {
 
 		return authenticated;
 	}
-
 }
 }}}
 
- 
+When authentication was successful every further request is associated with a session object. See session management for that. The listing shows how to store a custom User-Object when authentication was successful. Any further requests can read that User-Object out of the session.
+
 = Not supported =
 Authentication with X509v3 certificates is neither supported at the moment nor planned to be in the near future.
