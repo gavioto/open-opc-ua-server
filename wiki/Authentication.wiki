@@ -71,7 +71,7 @@ public class SampleAuthenticator implements IUserPasswordAuthenticator {
 }
 }}}
 
-When authentication was successful every further request is associated with a session object. See session management for that. The listing shows how to store a custom User-Object when authentication was successful. Any further requests can read that User-Object out of the session.
+When authentication was successful every further request is associated with a session object. See [Sessions] for that. The listing shows how to store a custom User-Object when authentication was successful. Any further requests can read that User-Object out of the session.
 
 = Not supported =
 Authentication with X509v3 certificates is neither supported at the moment nor planned to be in the near future.
