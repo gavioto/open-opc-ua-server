@@ -8,7 +8,7 @@ Two different authentication methods are supported:
 
 = Anonymous =
 
-Clients can connect anonymously, that is they do not send any identity information in their activateSession request. To support anonymous sessions you have to call the following method on the UaServer object.
+Clients can connect anonymously, that is they do not send any identity information in their activateSession request. To support anonymous sessions you have to call the following method on the !UaServer object.
 
 {{{
 // create a UAServer instance
@@ -36,7 +36,8 @@ server.addUserTokenPolicy(new SampleAuthenticator(), UserTokenPolicy.SECURE_USER
 ...
 }}}
 
-== UserTokenPolicies ==
+== !UserTokenPolicies ==
+For using username and password authentication at least one (or more) !UserTokenPolicies where the !UserTokenType is set to !UserTokenType.!UserName have to be provided. The !UserTokenPolicy defines how the client authenticates to the server. It contains a field !SecurityPolicyUri which defines how the password is sent from the client. This can either be !SecurityPolicy.NONE which means the password is sent in plaintext and therefore not encrypted at all. Or it is set to some other !SecurityPolicy, hence the client has to encrypt the password with the defined encryption algorithm and key length. 
 
 == IUserPasswordAuthenticator Implementation ==
 {{{
