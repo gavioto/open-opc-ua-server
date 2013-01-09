@@ -8,4 +8,9 @@ Two different authentication methods are supported:
 
 = Anonymous =
 
+Clients can connect anonymously, that is they do not send any identity information in their activateSession request.
+
 = Username and password =
+
+= Not supported =
+Authentication with X509v3 certificates is neither supported at the moment nor planned to be in the near future.
