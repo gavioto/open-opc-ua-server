@@ -20,5 +20,9 @@ server.addAnonymousTokenPolicy();
 
 = Username and password =
 
+Username and password authentication is also supported by the server. Therefore you have to provide
+ * at least one or more UserTokenPolicies where the UserTokenType is set to UserTokenType.UserName
+ * provide an IUserPasswordAuthenticator implementation which does the actual authentication
+ 
 = Not supported =
 Authentication with X509v3 certificates is neither supported at the moment nor planned to be in the near future.
