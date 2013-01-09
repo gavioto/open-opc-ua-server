@@ -37,7 +37,7 @@ server.addUserTokenPolicy(new SampleAuthenticator(), UserTokenPolicy.SECURE_USER
 }}}
 
 == !UserTokenPolicies ==
-For using username and password authentication at least one (or more) !UserTokenPolicies where the !UserTokenType is set to !UserTokenType.!UserName have to be provided. The !UserTokenPolicy defines how the client authenticates to the server. It contains a field !SecurityPolicyUri which defines how the password is sent from the client. This can either be !SecurityPolicy.NONE which means the password is sent in plaintext and therefore not encrypted at all. Or it is set to some other !SecurityPolicy, hence the client has to encrypt the password with the defined encryption algorithm and key length. 
+For using username and password authentication at least one (or more) !UserTokenPolicies where the !UserTokenType is set to !UserTokenType.!UserName have to be provided. The !UserTokenPolicy defines how the client authenticates to the server. It contains a field !SecurityPolicyUri which defines the used SecurityPolicy and therefore how the password is sent from the client. This can either be !SecurityPolicy.NONE which means the password is sent in plaintext and therefore not encrypted at all. Or it is set to some other !SecurityPolicy, hence the client has to encrypt the password with the defined encryption algorithm and key length. The server takes care of decrypting the password and call the IUserPasswordAuthenticator authenticator for authentication.
 
 == IUserPasswordAuthenticator Implementation ==
 {{{
