@@ -146,6 +146,9 @@ public class UAServer {
 		userPasswordAuthenticator = authenticator;
 	}
 
+	/**
+	 * Adds the {@link UserTokenPolicy#ANONYMOUS} to the server so that anonymous clients are supported.
+	 */
 	public void addAnonymousTokenPolicy() {
 		stackServer.addUserTokenPolicy(UserTokenPolicy.ANONYMOUS);
 		supportedUserTokenPolicies.put(UserTokenPolicy.ANONYMOUS.getPolicyId(), UserTokenPolicy.ANONYMOUS);
