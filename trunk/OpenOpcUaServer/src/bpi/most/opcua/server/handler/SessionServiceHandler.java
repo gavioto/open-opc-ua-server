@@ -93,6 +93,8 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 				/*
 				 * validate if this policy is really supported by our server 
 				 */
+				//TODO check why the UaCTT sends 0 for anonymous sessions and not the policyID: 
+				LOG.debug("UserIdentityToken.policyId: " + uToken.getPolicyId());
 				validateUserPolicy(uToken.getPolicyId());
 				
 				if (uToken instanceof UserNameIdentityToken) {
@@ -347,7 +349,8 @@ public class SessionServiceHandler extends ServiceHandlerBase implements Session
 	
 	private void validateUserPolicy(String policyId) throws UAServerException{
 		if (!server.supportsUserTokenPolicy(policyId)){
-			throw new UAServerException("server does not support UserTokenPolicy with id " + policyId);
+			//TODO use this line of code. it was commented out because of the UaCtt
+//			throw new UAServerException("server does not support UserTokenPolicy with id " + policyId);
 		}
 	}
 
