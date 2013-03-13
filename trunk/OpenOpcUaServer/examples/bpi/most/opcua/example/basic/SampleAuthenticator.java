@@ -22,8 +22,6 @@ public class SampleAuthenticator implements IUserPasswordAuthenticator {
 		users.put("Francine", "Smith");
 	}
 
-
-
 	@Override
 	public boolean authenticate(ClientIdentity clientIdentity) {
 		LOG.info(String.format("user %s authenticates with password %s", clientIdentity.getUsername(), clientIdentity.getPassword()));

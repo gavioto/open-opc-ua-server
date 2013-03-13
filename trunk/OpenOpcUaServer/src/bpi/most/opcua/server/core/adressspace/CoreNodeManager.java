@@ -197,7 +197,7 @@ public class CoreNodeManager implements INodeManager {
 			VariableNode v = new VariableNode();
 			v.setNodeClass(NodeClass.Variable);
 			v.setNodeId(nodeId);
-			v.setDataType(Identifiers.ServerState);
+			v.setDataType(Identifiers.ServerStatusDataType);
 			v.setValueRank(-1);
 			v.setArrayDimensions(null);
 			v.setBrowseName(new QualifiedName("State"));
@@ -212,11 +212,11 @@ public class CoreNodeManager implements INodeManager {
 		}
 		
 		else if (nodeId.equals(Identifiers.Server_ServerStatus_CurrentTime)) {
-			LOG.info("creating serverstatus state variable node");
+			LOG.info("creating serverstatus currentTime variable");
 			VariableNode v = new VariableNode();
 			v.setNodeClass(NodeClass.Variable);
 			v.setNodeId(nodeId);
-			v.setDataType(Identifiers.ServerState);
+			v.setDataType(Identifiers.UtcTime);
 			v.setValueRank(-1);
 			v.setArrayDimensions(null);
 			v.setBrowseName(new QualifiedName("State"));

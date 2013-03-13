@@ -1,5 +1,7 @@
 package bpi.most.opcua.server.handler;
 
+import java.util.Calendar;
+
 import org.opcfoundation.ua.builtintypes.DateTime;
 import org.opcfoundation.ua.builtintypes.DiagnosticInfo;
 import org.opcfoundation.ua.builtintypes.NodeId;
@@ -38,7 +40,8 @@ public class ServiceHandlerBase {
 
 		// build response header
 		ResponseHeader respHeader = new ResponseHeader();
-		respHeader.setTimestamp(new DateTime());
+		
+		respHeader.setTimestamp(new DateTime(Calendar.getInstance()));
 
 		// requesthandle is always the one the client sent in its request
 		respHeader.setRequestHandle(req.getRequestHeader().getRequestHandle());
