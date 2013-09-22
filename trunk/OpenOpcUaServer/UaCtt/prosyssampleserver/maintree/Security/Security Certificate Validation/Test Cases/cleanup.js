@@ -1,1 +1,0 @@
-//disconnectChannel( g_discoveryChannel );
